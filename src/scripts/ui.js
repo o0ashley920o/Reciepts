@@ -67,17 +67,38 @@ export function populateFilters(elements, lookups, receipts) {
 }
 
 export function populateLookupManagers(elements, lookups, handlers) {
+  const safeColour = (colour, fallback = '#2563eb') => /^#[0-9a-fA-F]{3,6}$/.test(colour) ? colour : fallback;
   const businessesMarkup = lookups.businesses
-    .map((business) => `<li><span>${escapeHtml(business.name)}</span><button data-lookup="business" data-id="${business.id}" type="button">×</button></li>`)
+    .map((business) => `<li><span style="border-left:3px solid ${safeColour(business.colour)};padding-left:0.4rem">${escapeHtml(business.name)}</span><button data-lookup="business" data-id="${business.id}" type="button">×</button></li>`)
     .join('');
   const categoriesMarkup = lookups.categories
-    .map((category) => `<li><span>${escapeHtml(category.name)}</span><button data-lookup="category" data-id="${category.id}" type="button">×</button></li>`)
+    .map((category) => `<li><span style="border-left:3px solid ${safeColour(category.colour)};padding-left:0.4rem">${escapeHtml(category.name)}${category.taxCode ? ` <em class="muted">(${escapeHtml(category.taxCode)})</em>` : ''}</span><button data-lookup="category" data-id="${category.id}" type="button">×</button></li>`)
     .join('');
   elements.businessList.innerHTML = businessesMarkup;
   elements.categoryList.innerHTML = categoriesMarkup;
   [elements.businessList, elements.categoryList].forEach((list) => {
     list.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => handlers.remove(button.dataset.lookup, button.dataset.id)));
   });
+
+  // Populate the category parent selector in the category add form (if present)
+  const parentSelect = document.querySelector('#category-parent');
+  if (parentSelect) {
+    setSelectOptions(
+      parentSelect,
+      lookups.categories.map((c) => ({ value: c.id, label: c.name })),
+      'No parent (top-level)',
+    );
+  }
+
+  // Populate the default-category selector in the business add form (if present)
+  const defaultCategorySelect = document.querySelector('#business-default-category');
+  if (defaultCategorySelect) {
+    setSelectOptions(
+      defaultCategorySelect,
+      lookups.categories.map((c) => ({ value: c.id, label: c.name })),
+      'No default category',
+    );
+  }
 }
 
 export function populateEditorSelects(form, lookups, receipt) {
@@ -96,15 +117,47 @@ export function populateEditorSelects(form, lookups, receipt) {
   setSelectOptions(form.elements.status, RECEIPT_STATUSES.map((status) => ({ value: status, label: status })));
 }
 
-export function renderReceiptList(elements, receipts, selectedId, lookups, settings) {
+export function renderReceiptList(elements, receipts, selectedId, lookups, settings, listState = {}) {
+  const { page = 0, pageSize = 50, viewMode = 'list' } = listState;
   const categories = buildLookupMap(lookups.categories);
   const businesses = buildLookupMap(lookups.businesses);
+  const totalPages = Math.max(1, Math.ceil(receipts.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageReceipts = receipts.slice(safePage * pageSize, (safePage + 1) * pageSize);
+
   elements.receiptCount.textContent = `${receipts.length} shown`;
-  if (!receipts.length) {
+
+  // Update toggle button label
+  if (elements.listViewToggle) {
+    elements.listViewToggle.textContent = viewMode === 'grid' ? 'List view' : 'Grid view';
+    elements.listViewToggle.dataset.viewMode = viewMode;
+  }
+
+  // Update pagination buttons
+  if (elements.prevPageButton) {
+    elements.prevPageButton.disabled = safePage === 0;
+    elements.prevPageButton.textContent = `← Prev`;
+  }
+  if (elements.nextPageButton) {
+    elements.nextPageButton.disabled = safePage >= totalPages - 1;
+    elements.nextPageButton.textContent = `Next →`;
+  }
+
+  const paginationInfo = document.querySelector('#pagination-info');
+  if (paginationInfo) {
+    paginationInfo.textContent = totalPages > 1
+      ? `Page ${safePage + 1} of ${totalPages}`
+      : '';
+  }
+
+  elements.receiptList.dataset.viewMode = viewMode;
+
+  if (!pageReceipts.length) {
     elements.receiptList.innerHTML = '<p class="empty-state">Upload receipts to populate your offline library.</p>';
     return;
   }
-  elements.receiptList.innerHTML = receipts
+
+  elements.receiptList.innerHTML = pageReceipts
     .map((receipt) => `
       <button class="receipt-card ${receipt.id === selectedId ? 'active' : ''}" type="button" data-id="${receipt.id}">
         <div class="receipt-card-image">
@@ -173,6 +226,8 @@ export function updateStats(elements, receipts, lookups, settings) {
   elements.statDuplicates.textContent = String(duplicates);
 
   const categoryMap = buildLookupMap(lookups.categories);
+  const businessMap = buildLookupMap(lookups.businesses);
+
   const categoryTotals = receipts.reduce((accumulator, receipt) => {
     const key = categoryMap[receipt.categoryId] ?? 'Uncategorised';
     accumulator[key] = (accumulator[key] ?? 0) + Number(receipt.total || 0);
@@ -183,9 +238,24 @@ export function updateStats(elements, receipts, lookups, settings) {
     accumulator[key] = (accumulator[key] ?? 0) + 1;
     return accumulator;
   }, {});
+  const businessTotals = receipts.reduce((accumulator, receipt) => {
+    const key = businessMap[receipt.businessId] ?? 'Unassigned';
+    accumulator[key] = (accumulator[key] ?? 0) + Number(receipt.total || 0);
+    return accumulator;
+  }, {});
+  const monthlyTotals = receipts.reduce((accumulator, receipt) => {
+    if (!receipt.dateTime) return accumulator;
+    const date = new Date(receipt.dateTime);
+    if (Number.isNaN(date.getTime())) return accumulator;
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    accumulator[key] = (accumulator[key] ?? 0) + Number(receipt.total || 0);
+    return accumulator;
+  }, {});
 
   const categoryEntries = Object.entries(categoryTotals);
   const yearEntries = Object.entries(yearCounts).sort((left, right) => left[0].localeCompare(right[0]));
+  const businessEntries = Object.entries(businessTotals).sort((left, right) => right[1] - left[1]);
+  const monthlyEntries = Object.entries(monthlyTotals).sort((left, right) => left[0].localeCompare(right[0])).slice(-18);
 
   renderChart(elements.categoryChart, 'doughnut', {
     labels: categoryEntries.map(([label]) => label),
@@ -203,6 +273,29 @@ export function updateStats(elements, receipts, lookups, settings) {
       data: yearEntries.map(([, value]) => value),
       backgroundColor: '#2563eb',
       borderRadius: 12,
+    }],
+  });
+
+  renderChart(elements.businessChart, 'bar', {
+    labels: businessEntries.map(([label]) => label),
+    datasets: [{
+      label: 'Total spend',
+      data: businessEntries.map(([, value]) => Number(value.toFixed(2))),
+      backgroundColor: '#14b8a6',
+      borderRadius: 12,
+    }],
+  });
+
+  renderChart(elements.monthlyChart, 'line', {
+    labels: monthlyEntries.map(([label]) => label),
+    datasets: [{
+      label: 'Monthly spend',
+      data: monthlyEntries.map(([, value]) => Number(value.toFixed(2))),
+      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(139,92,246,0.12)',
+      fill: true,
+      tension: 0.35,
+      pointRadius: 4,
     }],
   });
 }

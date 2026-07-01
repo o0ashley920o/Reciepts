@@ -15,3 +15,24 @@ export function listFinancialYears(anchorDate = new Date(), span = 6) {
     return `${year}-${String(year + 1).slice(-2)}`;
   });
 }
+
+export function getCurrentFY() {
+  return getFinancialYearLabel(new Date().toISOString());
+}
+
+export function getFYRange(fy) {
+  if (!fy || !/^\d{4}-\d{2}$/.test(fy)) return null;
+  const startYear = Number(fy.split('-')[0]);
+  return {
+    start: new Date(Date.UTC(startYear, 6, 1)),
+    end: new Date(Date.UTC(startYear + 1, 5, 30, 23, 59, 59, 999)),
+  };
+}
+
+export function isInFY(dateInput, fy) {
+  const range = getFYRange(fy);
+  if (!range) return false;
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return false;
+  return date >= range.start && date <= range.end;
+}

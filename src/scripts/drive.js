@@ -42,7 +42,39 @@ export async function connectGoogleDrive(clientId) {
   return true;
 }
 
-export async function uploadBackupToDrive({ clientId, fileName, folder = 'appDataFolder', content }) {
+export async function listDriveBackups({ clientId, folder = 'appDataFolder' }) {
+  await connectGoogleDrive(clientId);
+  if (!accessToken) {
+    throw new Error('Google Drive authentication failed.');
+  }
+  const spaces = folder === 'appDataFolder' ? 'appDataFolder' : 'drive';
+  const query = encodeURIComponent(`mimeType='application/json' and name contains 'receipt'`);
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=${spaces}&q=${query}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime%20desc`,
+    { headers: { Authorization: 'Bearer ' + accessToken } },
+  );
+  if (!response.ok) {
+    throw new Error(`Drive listing failed with status ${response.status}.`);
+  }
+  const data = await response.json();
+  return data.files ?? [];
+}
+
+export async function downloadDriveFile(fileId) {
+  if (!accessToken) {
+    throw new Error('Not connected to Google Drive. Connect first.');
+  }
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`,
+    { headers: { Authorization: 'Bearer ' + accessToken } },
+  );
+  if (!response.ok) {
+    throw new Error(`Drive download failed with status ${response.status}.`);
+  }
+  return response.json();
+}
+
+export async function uploadBackupToDrive({ clientId, content, fileName, folder = 'appDataFolder' }) {
   await connectGoogleDrive(clientId);
   if (!accessToken) {
     throw new Error('Google Drive authentication failed.');

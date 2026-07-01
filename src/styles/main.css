@@ -528,6 +528,69 @@ summary {
   cursor: pointer;
 }
 
+.inline-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.inline-label select,
+.inline-label input[type='color'] {
+  flex: 1;
+  min-width: 0;
+}
+
+input[type='color'] {
+  height: 2.4rem;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--panel-border);
+}
+
+#pagination-info {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.receipt-list[data-view-mode='grid'] {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.receipt-list[data-view-mode='grid'] .receipt-card {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.receipt-list[data-view-mode='grid'] .receipt-card-image {
+  width: 100%;
+  height: 120px;
+  border-radius: 14px;
+}
+
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(146, 64, 14, 0.96);
+  color: white;
+  text-align: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.92rem;
+}
+
 @media (max-width: 1200px) {
   .workspace-grid,
   .detail-grid {
