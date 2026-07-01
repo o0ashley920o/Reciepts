@@ -1,0 +1,37 @@
+.app-modal {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0;
+  max-width: 420px;
+}
+
+.app-modal::backdrop {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.app-modal__panel {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-5);
+}
+
+.app-modal menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+}
+
+.toast {
+  border: 1px solid transparent;
+}
+
+.toast[data-tone='success'] {
+  border-color: color-mix(in srgb, var(--color-success) 60%, transparent);
+}
+
+.toast[data-tone='error'] {
+  border-color: color-mix(in srgb, var(--color-error) 60%, transparent);
+}
