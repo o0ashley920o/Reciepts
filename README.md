@@ -141,6 +141,13 @@ The repository includes `/home/runner/work/Reciepts/Reciepts/.env.example` for h
 | `API_BODY_LIMIT_MB` | Maximum JSON upload size accepted by the hosted API |
 | `LOG_LEVEL` | Logging verbosity |
 
+## Deployment documents
+
+- GitHub Pages: [docs/deployment/GITHUB_PAGES.md](docs/deployment/GITHUB_PAGES.md)
+- Cloudflare: [docs/deployment/CLOUDFLARE.md](docs/deployment/CLOUDFLARE.md)
+- HostGator: [docs/deployment/HOSTGATOR.md](docs/deployment/HOSTGATOR.md)
+- Docker: [deploy/docker/](deploy/docker/)
+
 ## Deployment methods
 
 ### GitHub Pages guide
