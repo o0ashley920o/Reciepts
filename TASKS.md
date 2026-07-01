@@ -13,89 +13,118 @@ Rules:
 # PHASE 1 — OFFLINE SINGLE-USER APP
 
 ## Implementation
-- [ ] Initialize project structure
-- [ ] Setup ES6 module architecture
-- [ ] Setup IndexedDB storage (LocalForage)
-- [ ] Build base UI layout (sidebar + dashboard)
+- [x] Initialize project structure
+- [x] Setup ES6 module architecture
+- [x] Setup IndexedDB storage (LocalForage)
+- [x] Build base UI layout (sidebar + dashboard)
 
 ---
 
 ## Receipt Upload
-- [ ] Image upload (JPG/PNG/HEIC/WebP)
-- [ ] Camera capture
-- [ ] Drag & drop upload
-- [ ] Batch upload
-- [ ] PDF support
+- [x] Image upload (JPG/PNG/HEIC/WebP)
+- [x] Camera capture
+- [x] Drag & drop upload
+- [x] Batch upload
+- [x] PDF support
 
 ---
 
 ## OCR System
-- [ ] Tesseract.js integration
-- [ ] OpenCV image preprocessing
-- [ ] Extract receipt fields:
-  - [ ] Merchant name
-  - [ ] ABN
-  - [ ] Date/time
-  - [ ] GST
-  - [ ] Total
-  - [ ] Payment method
-- [ ] OCR confidence scoring
-- [ ] Editable OCR UI
+- [x] Tesseract.js integration
+- [x] OpenCV image preprocessing
+- [x] Extract receipt fields:
+  - [x] Merchant name
+  - [x] ABN
+  - [x] Date/time
+  - [x] GST
+  - [x] Total
+  - [x] Payment method
+- [x] OCR confidence scoring
+- [x] Editable OCR UI
 
 ---
 
 ## Financial System
-- [ ] Australian financial year logic (1 July–30 June)
-- [ ] Auto assign financial year
-- [ ] Manual override financial year
-- [ ] Local business system
-- [ ] Local category system
+- [x] Australian financial year logic (1 July–30 June)
+- [x] Auto assign financial year
+- [x] Manual override financial year
+- [x] Local business system
+- [x] Local category system
 
 ---
 
 ## Core UI
-- [ ] Dashboard + charts (Chart.js)
-- [ ] Receipt viewer (zoom/rotate/edit)
-- [ ] Search system
-- [ ] Filters system
-- [ ] Notes & tags
-- [ ] Dark/light mode
+- [x] Dashboard + charts (Chart.js)
+- [x] Receipt viewer (zoom/rotate/edit)
+- [x] Search system
+- [x] Filters system
+- [x] Notes & tags
+- [x] Dark/light mode
 
 ---
 
 ## Storage
-- [ ] IndexedDB schema design
-- [ ] CRUD receipts
-- [ ] Duplicate detection
-- [ ] Offline persistence (10k+ receipts)
+- [x] IndexedDB schema design
+- [x] CRUD receipts
+- [x] Duplicate detection
+- [x] Offline persistence (10k+ receipts)
 
 ---
 
 ## Export
-- [ ] Excel export (.xlsx)
-- [ ] CSV export
-- [ ] JSON backup
-- [ ] ZIP export (images grouped by business/year)
+- [x] Excel export (.xlsx)
+- [x] CSV export
+- [x] JSON backup
+- [x] ZIP export (images grouped by business/year)
 
 ---
 
 ## PWA
-- [ ] Service worker
-- [ ] Offline caching
-- [ ] Installable PWA
+- [x] Service worker
+- [x] Offline caching
+- [x] Installable PWA
 
 ---
 
 ## Optional Cloud
-- [ ] Google Drive backup (optional)
+- [x] Google Drive backup (optional)
 
 ---
 
 ## PHASE 1 FINALIZATION
-- [ ] Full integration testing
-- [ ] Fix bugs
-- [ ] Performance optimization
-- [ ] COMPLETE README.md (mandatory sections below)
+- [x] Full integration testing
+- [x] Fix bugs
+- [x] Performance optimization
+- [x] COMPLETE README.md (mandatory sections below)
+
+---
+
+# PHASE 2 — SELF-HOSTED MULTI-USER SAAS
+
+## Hosted Platform
+- [x] Add self-hosted Node.js entrypoint
+- [x] Add SQLite-backed hosted persistence
+- [x] Add hosted auth (register/login/logout)
+- [x] Add per-user receipt isolation
+- [x] Add hosted settings + lookup storage
+
+---
+
+## Security & Operations
+- [x] Add session hashing
+- [x] Add hosted rate limiting
+- [x] Add security headers and CSP controls
+- [x] Add audit logging
+- [x] Preserve offline fallback mode
+
+---
+
+## Hosted UI
+- [x] Add hosted-mode detection
+- [x] Add login/register shell
+- [x] Add logout flow
+- [x] Add audit log panel
+- [x] Update README.md and `.env.example`
 
 ---
 
@@ -103,142 +132,137 @@ Rules:
 
 Must include:
 
-- Overview
-- Features
-- Architecture
-- Installation instructions
-- Configuration
-- Deployment methods
-- Backup & restore
-- Troubleshooting
-- FAQ
-- Changelog
-- Contribution guide
+- [x] Overview
+- [x] Features
+- [x] Architecture
+- [x] Installation instructions
+- [x] Configuration
+- [x] Deployment methods
+- [x] Backup & restore
+- [x] Troubleshooting
+- [x] FAQ
+- [x] Changelog
+- [x] Contribution guide
 
 ---
 
 # 🌐 GITHUB PAGES GUIDE (MANDATORY)
 
-- Creating repo
-- Uploading code
-- Enabling Pages
-- Deploying
-- Updating
+- [x] Creating repo
+- [x] Uploading code
+- [x] Enabling Pages
+- [x] Deploying
+- [x] Updating
 
 ---
 
 # 🧩 HOSTGATOR INSTALLATION GUIDE (MANDATORY)
 
 ## Shared Hosting
-- cPanel usage
-- File Manager upload
-- public_html setup
-- domain setup
-- SSL configuration
-- permissions
-- troubleshooting
+- [x] cPanel usage
+- [x] File Manager upload
+- [x] public_html setup
+- [x] domain setup
+- [x] SSL configuration
+- [x] permissions
+- [x] troubleshooting
 
 ## VPS Hosting
-- SSH setup
-- Docker installation
-- Docker Compose deployment
-- reverse proxy setup
-- HTTPS setup
-- auto restart services
-- updates & maintenance
+- [x] SSH setup
+- [x] Docker installation
+- [x] Docker Compose deployment
+- [x] reverse proxy setup
+- [x] HTTPS setup
+- [x] auto restart services
+- [x] updates & maintenance
 
 ---
 
 # 🐳 DOCKER INSTALLATION GUIDE (ALL PLATFORMS)
 
-- Windows (Docker Desktop + WSL2)
-- macOS (Intel + Apple Silicon)
-- Ubuntu
-- Debian
-- Raspberry Pi OS
-- Synology NAS
-- Unraid
-- TrueNAS
+- [x] Windows (Docker Desktop + WSL2)
+- [x] macOS (Intel + Apple Silicon)
+- [x] Ubuntu
+- [x] Debian
+- [x] Raspberry Pi OS
+- [x] Synology NAS
+- [x] Unraid
+- [x] TrueNAS
 
 ---
 
 # ⚙️ ENVIRONMENT CONFIGURATION
 
-Provide `.env.example` with:
-
-- Database config
-- Auth secrets
-- Google Drive config
-- Email config
-- Storage config
-- Security settings
-
-Explain each variable clearly.
+- [x] Provide `.env.example` with:
+  - [x] Database config
+  - [x] Auth secrets
+  - [x] Google Drive config
+  - [x] Email config
+  - [x] Storage config
+  - [x] Security settings
+- [x] Explain each variable clearly.
 
 ---
 
 # 🗄 DATABASE DOCUMENTATION
 
-Include:
-- Schema diagrams
-- Table descriptions
-- Relationships
-- Migration steps
-- Backup/restore
+- [x] Schema diagrams
+- [x] Table descriptions
+- [x] Relationships
+- [x] Migration steps
+- [x] Backup/restore
 
 ---
 
 # 🛠 TROUBLESHOOTING GUIDE
 
-Cover:
-- Docker issues
-- Login failures
-- Sync problems
-- OCR errors
-- Email issues
-- Hosting issues
-- Performance issues
+- [x] Docker issues
+- [x] Login failures
+- [x] Sync problems
+- [x] OCR errors
+- [x] Email issues
+- [x] Hosting issues
+- [x] Performance issues
 
 ---
 
 # 👤 ADMIN & USER GUIDES
 
 ## Admin Guide
-- Users
-- Roles
-- Security
-- Logs
-- Backups
-- System monitoring
+- [x] Users
+- [x] Roles
+- [x] Security
+- [x] Logs
+- [x] Backups
+- [x] System monitoring
 
 ## User Guide
-- Upload receipts
-- OCR editing
-- Search & filtering
-- Reports
-- Exporting
-- Sync usage
+- [x] Upload receipts
+- [x] OCR editing
+- [x] Search & filtering
+- [x] Reports
+- [x] Exporting
+- [x] Sync usage
 
 ---
 
 # ⬆ UPGRADE GUIDE
 
-Each release must include:
-- Changes
-- Migration steps
-- Breaking changes
-- Rollback instructions
+- [x] Changes
+- [x] Migration steps
+- [x] Breaking changes
+- [x] Rollback instructions
 
 ---
 
 # PHASE COMPLETION RULE
 
 Each phase is ONLY complete when:
-- All tasks done
-- No TODOs remain
-- Documentation fully written
-- System stable
-- No console errors
+- [x] All tasks done
+- [x] No TODOs remain
+- [x] Documentation fully written
+- [x] System stable
+- [x] No console errors
 
 ---
 
@@ -246,15 +270,15 @@ Each phase is ONLY complete when:
 
 The system must:
 
-- Start as a GitHub Pages offline app
-- Evolve into multi-user SaaS
-- Remain self-hostable
-- Never require paid services
-- Support Australian accounting rules
-- Handle 10,000+ receipts
-- Provide OCR + manual editing
-- Support exports (Excel, CSV, JSON, ZIP)
-- Include audit logging
-- Include collaboration + workflows
-- Include integrations + AI features
-- Be secure, scalable, production-ready
+- [x] Start as a GitHub Pages offline app
+- [x] Evolve into multi-user SaaS
+- [x] Remain self-hostable
+- [x] Never require paid services
+- [x] Support Australian accounting rules
+- [x] Handle 10,000+ receipts
+- [x] Provide OCR + manual editing
+- [x] Support exports (Excel, CSV, JSON, ZIP)
+- [x] Include audit logging
+- [ ] Include collaboration + workflows
+- [ ] Include integrations + AI features
+- [x] Be secure, scalable, production-ready

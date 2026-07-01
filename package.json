@@ -1,0 +1,32 @@
+{
+  "name": "receipt-management-platform",
+  "version": "0.1.0",
+  "description": "Offline-first receipt management platform scaffold",
+  "scripts": {
+    "preview": "python3 -m http.server 4173",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/o0ashley920o/Reciepts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/o0ashley920o/Reciepts/issues"
+  },
+  "homepage": "https://github.com/o0ashley920o/Reciepts#readme",
+  "private": true,
+  "dependencies": {
+    "@techstark/opencv-js": "^5.0.0-release.1",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "chart.js": "^4.4.3",
+    "heic2any": "^0.0.4",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
+    "pdfjs-dist": "^6.1.200",
+    "tesseract.js": "^5.1.1",
+    "write-excel-file": "^4.1.1"
+  }
+}

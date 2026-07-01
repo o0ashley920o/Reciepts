@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta
+      name="description"
+      content="Offline-first receipt capture, OCR, categorisation, and export for Australian bookkeeping workflows."
+    />
+    <title>Receipt Management Platform</title>
+    <link rel="icon" href="./src/assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./src/styles/main.css" />
+    <script defer src="./src/vendor/localforage.min.js"></script>
+    <script defer src="./src/vendor/chart.umd.js"></script>
+    <script defer src="./src/vendor/tesseract.min.js"></script>
+    <script defer src="./src/vendor/heic2any.min.js"></script>
+    <script defer src="./src/vendor/jszip.min.js"></script>
+    <script defer src="./src/vendor/write-excel-file.min.js"></script>
+    <script async src="./src/vendor/opencv.js"></script>
+    <script type="module" src="./src/scripts/app.js"></script>
+  </head>
+  <body>
+    <section id="auth-shell" class="auth-shell" hidden>
+      <div class="auth-card panel">
+        <div class="section-heading">
+          <div>
+            <p id="auth-phase" class="eyebrow">Phase 2</p>
+            <h1>Receipt Hub</h1>
+          </div>
+        </div>
+        <p id="auth-copy" class="sidebar-copy">
+          Sign in to access the shared self-hosted receipt workspace, audit history, and user-scoped storage.
+        </p>
+        <div class="auth-grid">
+          <form id="login-form" class="stack-form">
+            <h2>Sign in</h2>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" autocomplete="current-password" required />
+            </label>
+            <button class="button" type="submit">Sign in</button>
+          </form>
+          <form id="register-form" class="stack-form">
+            <h2>Create account</h2>
+            <label>
+              Name
+              <input name="displayName" type="text" autocomplete="name" maxlength="80" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+            </label>
+            <button class="secondary-button" type="submit">Register</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <div id="app-shell" class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <div class="brand">
+            <div>
+              <p id="mode-badge" class="eyebrow">Phase 1</p>
+              <h1>Receipt Hub</h1>
+            </div>
+            <button id="theme-toggle" class="secondary-button" type="button" aria-label="Toggle light and dark theme">
+              Toggle theme
+            </button>
+          </div>
+          <p id="platform-status" class="sidebar-copy">
+            Offline-first receipt capture with OCR, Australian financial year logic, local storage, and export tools.
+          </p>
+        </div>
+
+        <section class="panel sidebar-panel">
+          <h2>Workspace</h2>
+          <div class="stack-form compact">
+            <div id="account-summary" class="support-copy">Offline workspace active.</div>
+            <button id="logout-button" class="secondary-button" type="button" hidden>Sign out</button>
+          </div>
+        </section>
+
+        <section class="panel sidebar-panel">
+          <h2>Upload receipts</h2>
+          <div class="button-row wrap">
+            <label class="button" for="upload-input">Upload files</label>
+            <label class="secondary-button" for="camera-input">Use camera</label>
+          </div>
+          <input id="upload-input" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf,.heic,.heif,.pdf" multiple hidden />
+          <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drag and drop receipts here">
+            Drag &amp; drop JPG, PNG, HEIC, WebP, or PDF files here.
+          </div>
+          <div class="upload-meta">
+            <span id="upload-status">No uploads running.</span>
+            <progress id="upload-progress" max="100" value="0"></progress>
+          </div>
+        </section>
+
+        <section class="panel sidebar-panel">
+          <h2>Businesses</h2>
+          <form id="business-form" class="stack-form">
+            <input id="business-name" name="businessName" type="text" placeholder="Add business name" maxlength="80" required />
+            <button class="secondary-button" type="submit">Add business</button>
+          </form>
+          <ul id="business-list" class="chip-list"></ul>
+        </section>
+
+        <section class="panel sidebar-panel">
+          <h2>Categories</h2>
+          <form id="category-form" class="stack-form">
+            <input id="category-name" name="categoryName" type="text" placeholder="Add category name" maxlength="80" required />
+            <button class="secondary-button" type="submit">Add category</button>
+          </form>
+          <ul id="category-list" class="chip-list"></ul>
+        </section>
+
+        <section class="panel sidebar-panel">
+          <h2>Backups</h2>
+          <div class="stack-form">
+            <button id="export-json-button" class="secondary-button" type="button">Export JSON backup</button>
+            <button id="import-json-button" class="secondary-button" type="button">Import JSON backup</button>
+            <input id="import-json-input" type="file" accept="application/json" hidden />
+          </div>
+          <details>
+            <summary>Optional Google Drive backup</summary>
+            <p class="support-copy">
+              Provide a Google OAuth client ID in Settings, then connect and upload your JSON backup to Drive.
+            </p>
+            <div class="stack-form compact">
+              <button id="drive-connect-button" class="secondary-button" type="button">Connect Google Drive</button>
+              <button id="drive-backup-button" class="secondary-button" type="button">Backup to Drive</button>
+            </div>
+          </details>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar panel">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h2>Receipt overview</h2>
+          </div>
+          <div class="button-row wrap">
+            <button id="export-csv-button" class="secondary-button" type="button">CSV</button>
+            <button id="export-xlsx-button" class="secondary-button" type="button">Excel</button>
+            <button id="export-zip-button" class="secondary-button" type="button">ZIP</button>
+          </div>
+        </header>
+
+        <section class="filters panel">
+          <div class="search-field">
+            <label for="search-input">Search</label>
+            <input id="search-input" type="search" placeholder="Merchant, ABN, notes, tags, amount..." />
+          </div>
+          <div class="filter-grid">
+            <label>
+              Financial year
+              <select id="year-filter"></select>
+            </label>
+            <label>
+              Business
+              <select id="business-filter"></select>
+            </label>
+            <label>
+              Category
+              <select id="category-filter"></select>
+            </label>
+            <label>
+              Payment
+              <select id="payment-filter"></select>
+            </label>
+            <label>
+              Status
+              <select id="status-filter">
+                <option value="all">All statuses</option>
+                <option value="new">New</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="duplicate">Duplicate</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="stats-grid">
+          <article class="stat-card panel">
+            <span>Total receipts</span>
+            <strong id="stat-total-receipts">0</strong>
+          </article>
+          <article class="stat-card panel">
+            <span>Total spend</span>
+            <strong id="stat-total-spend">$0.00</strong>
+          </article>
+          <article class="stat-card panel">
+            <span>GST tracked</span>
+            <strong id="stat-total-gst">$0.00</strong>
+          </article>
+          <article class="stat-card panel">
+            <span>Duplicates</span>
+            <strong id="stat-duplicates">0</strong>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="panel chart-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Chart.js</p>
+                <h3>Spend by category</h3>
+              </div>
+            </div>
+            <canvas id="category-chart" aria-label="Category spending chart"></canvas>
+          </article>
+          <article class="panel chart-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Australian FY</p>
+                <h3>Receipts by financial year</h3>
+              </div>
+            </div>
+            <canvas id="year-chart" aria-label="Financial year receipt chart"></canvas>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="panel receipts-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Receipts</p>
+                <h3>Library</h3>
+              </div>
+              <span id="receipt-count">0 shown</span>
+            </div>
+            <div id="receipt-list" class="receipt-list"></div>
+          </article>
+
+          <article class="panel detail-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Viewer</p>
+                <h3>Receipt detail</h3>
+              </div>
+              <div class="button-row wrap">
+                <button id="zoom-out-button" class="secondary-button" type="button">-</button>
+                <button id="zoom-reset-button" class="secondary-button" type="button">100%</button>
+                <button id="zoom-in-button" class="secondary-button" type="button">+</button>
+                <button id="rotate-button" class="secondary-button" type="button">Rotate</button>
+                <button id="delete-button" class="danger-button" type="button">Delete</button>
+              </div>
+            </div>
+            <div class="detail-grid">
+              <div class="viewer-wrap">
+                <div id="viewer-stage" class="viewer-stage empty">
+                  <p>Select a receipt to preview it.</p>
+                </div>
+              </div>
+              <form id="receipt-form" class="receipt-form">
+                <label>
+                  Merchant name
+                  <input name="merchantName" type="text" />
+                </label>
+                <label>
+                  ABN
+                  <input name="abn" type="text" />
+                </label>
+                <label>
+                  Date/time
+                  <input name="dateTime" type="datetime-local" />
+                </label>
+                <label>
+                  Total
+                  <input name="total" type="number" step="0.01" min="0" />
+                </label>
+                <label>
+                  GST
+                  <input name="gst" type="number" step="0.01" min="0" />
+                </label>
+                <label>
+                  Payment method
+                  <select name="paymentMethod"></select>
+                </label>
+                <label>
+                  Financial year
+                  <select name="financialYear"></select>
+                </label>
+                <label>
+                  Business
+                  <select name="businessId"></select>
+                </label>
+                <label>
+                  Category
+                  <select name="categoryId"></select>
+                </label>
+                <label>
+                  Status
+                  <select name="status">
+                    <option value="new">New</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="duplicate">Duplicate</option>
+                  </select>
+                </label>
+                <label class="full-width">
+                  Tags
+                  <input name="tags" type="text" placeholder="Comma separated tags" />
+                </label>
+                <label class="full-width">
+                  Notes
+                  <textarea name="notes" rows="5" placeholder="Store audit notes, follow-ups, or bookkeeping context."></textarea>
+                </label>
+                <div class="confidence-grid full-width">
+                  <div>
+                    <span>OCR confidence</span>
+                    <strong id="ocr-confidence">—</strong>
+                  </div>
+                  <div>
+                    <span>Extraction confidence</span>
+                    <strong id="extraction-confidence">—</strong>
+                  </div>
+                  <div>
+                    <span>Duplicate check</span>
+                    <strong id="duplicate-status">—</strong>
+                  </div>
+                </div>
+                <label class="full-width">
+                  OCR text
+                  <textarea name="ocrText" rows="8" placeholder="Raw OCR output"></textarea>
+                </label>
+                <div class="button-row wrap full-width">
+                  <button class="button" type="submit">Save changes</button>
+                  <button id="reprocess-button" class="secondary-button" type="button">Re-run OCR</button>
+                </div>
+              </form>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel settings-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h3>Platform configuration</h3>
+            </div>
+          </div>
+          <form id="settings-form" class="settings-grid">
+            <label>
+              Currency
+              <input name="currency" type="text" maxlength="8" placeholder="AUD" />
+            </label>
+            <label>
+              Locale
+              <input name="locale" type="text" maxlength="16" placeholder="en-AU" />
+            </label>
+            <label>
+              Google OAuth client ID
+              <input name="googleClientId" type="text" placeholder="Optional" />
+            </label>
+            <label>
+              Google backup file name
+              <input name="googleBackupFileName" type="text" placeholder="receipt-backup.json" />
+            </label>
+            <label>
+              Drive folder
+              <input name="googleDriveFolder" type="text" placeholder="appDataFolder" />
+            </label>
+            <label>
+              Install status
+              <input id="install-status" type="text" value="Waiting for browser support" readonly />
+            </label>
+            <div class="button-row wrap full-width">
+              <button class="button" type="submit">Save settings</button>
+              <button id="install-button" class="secondary-button" type="button">Install app</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="audit-panel" class="panel settings-panel" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Audit log</p>
+              <h3>Recent activity</h3>
+            </div>
+          </div>
+          <ul id="audit-list" class="audit-list"></ul>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+  </body>
+</html>
