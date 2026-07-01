@@ -1,4 +1,4 @@
-# Reciepts
+# Receipt Management Platform
 
 Receipt Management Platform for offline-first receipt capture, OCR, and export workflows.
 

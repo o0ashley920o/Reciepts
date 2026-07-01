@@ -1,5 +1,5 @@
 {
-  "name": "reciepts",
+  "name": "receipt-management-platform",
   "version": "0.1.0",
   "description": "Offline-first receipt management platform scaffold",
   "scripts": {
