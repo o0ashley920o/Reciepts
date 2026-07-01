@@ -1,4 +1,4 @@
-const CACHE_NAME = 'receipt-platform-cache-v1';
+const CACHE_NAME = 'receipt-platform-cache-v2';
 const APP_FILES = [
   './',
   './index.html',
@@ -21,6 +21,7 @@ const APP_FILES = [
   './src/vendor/tessdata/4.0.0/eng.traineddata.gz',
   './src/scripts/app.js',
   './src/scripts/constants.js',
+  './src/scripts/auth.js',
   './src/scripts/utils.js',
   './src/scripts/finance.js',
   './src/scripts/storage.js',
@@ -48,6 +49,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

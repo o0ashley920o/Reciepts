@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Offline-first receipt management platform scaffold",
   "scripts": {
-    "preview": "python3 -m http.server 4173"
+    "preview": "python3 -m http.server 4173",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",

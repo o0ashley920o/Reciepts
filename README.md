@@ -2,11 +2,13 @@
 
 ## Overview
 
-Receipt Management Platform is a Phase 1 offline-first bookkeeping app built for GitHub Pages and other static hosts. It captures receipt images or PDFs, preprocesses them in the browser, runs OCR with editable extraction results, auto-assigns Australian financial years, stores data locally in IndexedDB through LocalForage, and exports data without requiring paid services.
+Receipt Management Platform now includes both the Phase 1 offline-first browser app and the Phase 2 self-hosted multi-user mode. It captures receipt images or PDFs, preprocesses them in the browser, runs OCR with editable extraction results, auto-assigns Australian financial years, stores data locally for offline deployments or in a hosted SQLite-backed workspace for signed-in users, and exports data without requiring paid services.
 
 ## Features
 
 - Offline single-user workflow with installable PWA support
+- Self-hosted multi-user mode with email/password sign-in and per-user receipt isolation
+- Hosted audit logging for sign-in, receipt, lookup, settings, and file storage events
 - ES6 module architecture with clear separation for OCR, storage, exports, finance, UI, and backup logic
 - Receipt upload via file picker, drag and drop, camera capture, batch processing, and PDF ingestion
 - HEIC/HEIF conversion, OpenCV preprocessing, and Tesseract.js OCR
@@ -24,13 +26,15 @@ Receipt Management Platform is a Phase 1 offline-first bookkeeping app built for
 ### Front-end modules
 
 - `/home/runner/work/Reciepts/Reciepts/index.html` — static shell and application layout
-- `/home/runner/work/Reciepts/Reciepts/src/scripts/app.js` — app bootstrap, event wiring, and orchestration
-- `/home/runner/work/Reciepts/Reciepts/src/scripts/storage.js` — LocalForage-backed IndexedDB schema and CRUD helpers
+- `/home/runner/work/Reciepts/Reciepts/src/scripts/app.js` — app bootstrap, hosted-mode auth flow, event wiring, and orchestration
+- `/home/runner/work/Reciepts/Reciepts/src/scripts/auth.js` — hosted-mode detection, session handling, and audit-log API calls
+- `/home/runner/work/Reciepts/Reciepts/src/scripts/storage.js` — dual-mode storage adapter for LocalForage or the hosted API
 - `/home/runner/work/Reciepts/Reciepts/src/scripts/ocr.js` — upload normalization, OpenCV preprocessing, PDF rendering, and Tesseract OCR
 - `/home/runner/work/Reciepts/Reciepts/src/scripts/finance.js` — Australian financial year logic
 - `/home/runner/work/Reciepts/Reciepts/src/scripts/exports.js` — Excel, CSV, JSON, and ZIP export flows
 - `/home/runner/work/Reciepts/Reciepts/src/scripts/drive.js` — optional Google Drive backup connector
 - `/home/runner/work/Reciepts/Reciepts/src/scripts/ui.js` — rendering, charts, theme handling, and notifications
+- `/home/runner/work/Reciepts/Reciepts/server.js` — self-hosted HTTP server, SQLite storage, authentication, audit logging, and static asset serving
 - `/home/runner/work/Reciepts/Reciepts/sw.js` — offline caching service worker
 - `/home/runner/work/Reciepts/Reciepts/manifest.webmanifest` — installable PWA manifest
 
@@ -54,6 +58,8 @@ Receipt Management Platform is a Phase 1 offline-first bookkeeping app built for
 5. Display charts, search results, and editable receipt detail.
 6. Export or back up data to local files or optional Google Drive.
 
+In hosted mode, the same browser UI authenticates against `/api/*`, persists receipts, files, settings, and lookups in SQLite, and records audit events for account and data changes.
+
 ## Installation instructions
 
 ### Local preview
@@ -63,6 +69,14 @@ npm run preview
 ```
 
 Then open `http://127.0.0.1:4173/`.
+
+### Self-hosted Phase 2 mode
+
+```bash
+npm run start
+```
+
+Then open `http://127.0.0.1:4173/`, sign in with the seeded administrator from `.env`, or register a new user if public registration is enabled.
 
 ### Static hosting prerequisites
 
@@ -93,17 +107,19 @@ The Settings panel persists:
 
 ### Environment configuration
 
-The repository includes `/home/runner/work/Reciepts/Reciepts/.env.example` for future hosted or multi-user deployments.
+The repository includes `/home/runner/work/Reciepts/Reciepts/.env.example` for hosted and multi-user deployments.
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Optional external database connection string for future server-backed modes |
-| `DATABASE_NAME` | Logical database name used by hosted deployments |
+| `DATABASE_URL` | SQLite database file path used by the hosted server |
+| `DATABASE_NAME` | Fallback database file name when `DATABASE_URL` is blank |
 | `DATABASE_BACKUP_PATH` | Default filesystem path for automated backups |
-| `AUTH_JWT_SECRET` | Secret used to sign JWT tokens in future authenticated modes |
-| `AUTH_SESSION_SECRET` | Secret used for browser session signing |
+| `PORT` | Hosted server port |
+| `AUTH_SESSION_SECRET` | Secret mixed into hosted session token hashing |
 | `ADMIN_EMAIL` | Bootstrap administrator email |
 | `ADMIN_PASSWORD` | Bootstrap administrator password |
+| `ALLOW_PUBLIC_REGISTRATION` | Enables or disables self-service account creation |
+| `SESSION_TTL_HOURS` | Session lifetime for hosted sign-ins |
 | `GOOGLE_CLIENT_ID` | OAuth client ID for Google Drive backup |
 | `GOOGLE_CLIENT_SECRET` | OAuth client secret for hosted flows |
 | `GOOGLE_REDIRECT_URI` | Redirect URL registered with Google OAuth |
@@ -122,6 +138,7 @@ The repository includes `/home/runner/work/Reciepts/Reciepts/.env.example` for f
 | `CORS_ALLOWED_ORIGINS` | Allowed origins for hosted APIs |
 | `CONTENT_SECURITY_POLICY_ENABLED` | Whether CSP headers are enabled |
 | `RATE_LIMIT_PER_MINUTE` | Hosted API rate limit |
+| `API_BODY_LIMIT_MB` | Maximum JSON upload size accepted by the hosted API |
 | `LOG_LEVEL` | Logging verbosity |
 
 ## Deployment methods
@@ -283,11 +300,11 @@ The ZIP export groups source images by business and financial year and includes 
 
 ### Login failures
 
-Phase 1 does not require sign-in. If Google Drive backup fails, recheck the Google OAuth client ID and authorised origin.
+Hosted sign-in uses the local seeded admin account or public registration, depending on `.env`. If sign-in fails, confirm the stored credentials, `AUTH_SESSION_SECRET`, and the browser is talking to the same host that issued the session.
 
 ### Sync problems
 
-Phase 1 is local-only. If data appears missing, verify you are using the same browser profile and that IndexedDB storage has not been cleared.
+Offline mode keeps data in the current browser profile, while hosted mode stores per-user records in SQLite. If data appears missing, confirm whether you are signed in to the expected hosted account or using the original browser profile for local mode.
 
 ### OCR errors
 
@@ -297,7 +314,7 @@ Phase 1 is local-only. If data appears missing, verify you are using the same br
 
 ### Email issues
 
-Email flows are reserved for future hosted deployments. Keep SMTP variables blank in static mode.
+SMTP settings remain optional. Leave them blank unless you are extending the hosted deployment with outbound email features.
 
 ### Hosting issues
 
@@ -335,14 +352,14 @@ No. Google Drive backup is optional. Local JSON and ZIP exports work without it.
 
 ## Admin guide
 
-Phase 1 is single-user and browser-local, so the current administrator is effectively the browser owner.
+Phase 2 adds a hosted administrator bootstrap flow and user-scoped data isolation.
 
-- **Users** — only the local browser user has access
-- **Roles** — no multi-role model yet
-- **Security** — use device access controls, browser profile protection, and encrypted backups
-- **Logs** — review browser console logs during troubleshooting and keep exported snapshots for audit history
-- **Backups** — schedule JSON exports before cleanup or browser resets
-- **System monitoring** — watch storage quotas, OCR performance, and service-worker registration status
+- **Users** — each hosted account has its own receipts, files, settings, and lookup values
+- **Roles** — a seeded administrator is created from `.env`; additional users register as standard users
+- **Security** — hosted mode adds signed session tokens, rate limiting, CSP/security headers, and per-user data access controls
+- **Logs** — review the in-app audit panel for receipt, settings, lookup, login, and logout events
+- **Backups** — schedule JSON exports and SQLite file backups for hosted deployments
+- **System monitoring** — watch disk growth, rate-limit behaviour, OCR performance, and service-worker registration status
 
 ## User guide
 
@@ -351,7 +368,7 @@ Phase 1 is single-user and browser-local, so the current administrator is effect
 - **Search and filtering** — use the dashboard search box and filter row to narrow by business, category, financial year, payment method, or status
 - **Reports** — review dashboard totals plus category and financial-year charts
 - **Exporting** — use CSV, Excel, JSON, and ZIP export buttons
-- **Sync usage** — Phase 1 has no multi-device sync; use JSON or Google Drive backup for manual transfer
+- **Sync usage** — hosted accounts sync through the built-in API, while offline mode still relies on JSON or Google Drive backup for manual transfer
 
 ## Upgrade guide
 
@@ -370,6 +387,12 @@ Each release should document:
 - Added IndexedDB persistence with LocalForage
 - Added OCR, financial year logic, exports, PWA support, and optional Google Drive backup
 - Added complete Phase 1 deployment and operations documentation
+
+### v2.0.0-phase2
+
+- Added a self-hosted Node.js server with SQLite persistence, session auth, rate limiting, and static asset serving
+- Added hosted-mode detection, sign-in/register flows, remote storage sync, and an in-app audit log panel
+- Preserved the offline IndexedDB mode for GitHub Pages and other static deployments
 
 ## Contribution guide
 

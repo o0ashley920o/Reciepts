@@ -1,3 +1,4 @@
+import { getSession, initialiseRuntimeConfig, isHostedMode, listAuditLogs, loginUser, logoutUser, registerUser, setSessionToken } from './auth.js';
 import { APP_VERSION } from './constants.js';
 import { exportBackupJson, exportCsv, exportReceiptZip, exportWorkbook } from './exports.js';
 import { getFinancialYearLabel } from './finance.js';
@@ -29,13 +30,13 @@ import {
   updateStatus,
   updateViewerTransform,
 } from './ui.js';
-import { debounce, fromDateTimeInput, safeJsonParse, sha256, sortByLabel, uid } from './utils.js';
+import { debounce, escapeHtml, fromDateTimeInput, safeJsonParse, sha256, sortByLabel, uid } from './utils.js';
 import { connectGoogleDrive, uploadBackupToDrive } from './drive.js';
 
 const state = {
   receipts: [],
   lookups: { businesses: [], categories: [] },
-  settings: {},
+  settings: { theme: 'light', locale: 'en-AU', currency: 'AUD' },
   selectedReceiptId: '',
   filters: {
     search: '',
@@ -47,9 +48,28 @@ const state = {
   },
   viewer: { zoom: 1, rotation: 0 },
   installPrompt: null,
+  runtime: {
+    mode: 'offline',
+    allowRegistration: false,
+    version: APP_VERSION,
+    user: null,
+  },
+  auditLogs: [],
 };
 
 const elements = {
+  authShell: document.querySelector('#auth-shell'),
+  authPhase: document.querySelector('#auth-phase'),
+  authCopy: document.querySelector('#auth-copy'),
+  loginForm: document.querySelector('#login-form'),
+  registerForm: document.querySelector('#register-form'),
+  appShell: document.querySelector('#app-shell'),
+  modeBadge: document.querySelector('#mode-badge'),
+  platformStatus: document.querySelector('#platform-status'),
+  accountSummary: document.querySelector('#account-summary'),
+  logoutButton: document.querySelector('#logout-button'),
+  auditPanel: document.querySelector('#audit-panel'),
+  auditList: document.querySelector('#audit-list'),
   uploadInput: document.querySelector('#upload-input'),
   cameraInput: document.querySelector('#camera-input'),
   importJsonInput: document.querySelector('#import-json-input'),
@@ -99,10 +119,16 @@ const elements = {
   installButton: document.querySelector('#install-button'),
 };
 
-document.title = `Receipt Hub ${APP_VERSION}`;
-
 function selectedReceipt() {
   return state.receipts.find((receipt) => receipt.id === state.selectedReceiptId) ?? null;
+}
+
+function hostedModeActive() {
+  return state.runtime.mode === 'server';
+}
+
+function authenticatedHostedMode() {
+  return hostedModeActive() && Boolean(state.runtime.user);
 }
 
 function getFilteredReceipts() {
@@ -143,8 +169,76 @@ async function hydrateState() {
   syncSelection();
 }
 
+function resetHostedState() {
+  state.receipts = [];
+  state.lookups = { businesses: [], categories: [] };
+  state.selectedReceiptId = '';
+  state.auditLogs = [];
+}
+
+function renderAuditLog() {
+  if (!elements.auditList) return;
+  if (!hostedModeActive()) {
+    elements.auditList.innerHTML = '';
+    return;
+  }
+  if (!state.auditLogs.length) {
+    elements.auditList.innerHTML = '<li><strong>No recent activity</strong><span class="muted">Changes, sign-ins, and data updates will appear here.</span></li>';
+    return;
+  }
+  const locale = state.settings.locale || 'en-AU';
+  const labels = {
+    'lookups.updated': 'Updated lookup lists',
+    'receipt.deleted': 'Deleted a receipt',
+    'receipt.file_saved': 'Stored receipt source file',
+    'receipt.saved': 'Saved a receipt',
+    'settings.updated': 'Updated workspace settings',
+    'user.logged_in': 'Signed in',
+    'user.logged_out': 'Signed out',
+    'user.registered': 'Created a new account',
+  };
+  elements.auditList.innerHTML = state.auditLogs
+    .map((entry) => `
+      <li>
+        <strong>${escapeHtml(labels[entry.action] || entry.action)}</strong>
+        <span class="muted">${escapeHtml(entry.targetType || 'workspace')}${entry.targetId ? ` · ${escapeHtml(entry.targetId)}` : ''}</span>
+        <time datetime="${escapeHtml(entry.createdAt || '')}">${escapeHtml(new Date(entry.createdAt).toLocaleString(locale))}</time>
+      </li>
+    `)
+    .join('');
+}
+
+function renderRuntimeState() {
+  const hosted = hostedModeActive();
+  document.body.dataset.runtime = hosted ? 'hosted' : 'offline';
+  document.title = `Receipt Hub ${state.runtime.version || APP_VERSION}`;
+  elements.modeBadge.textContent = hosted ? 'Phase 2' : 'Phase 1';
+  elements.authPhase.textContent = hosted ? 'Phase 2' : 'Phase 1';
+  elements.platformStatus.textContent = hosted
+    ? 'Self-hosted multi-user workspace with secure sign-in, per-user storage, and audit logging.'
+    : 'Offline-first receipt capture with OCR, Australian financial year logic, local storage, and export tools.';
+  elements.accountSummary.textContent = hosted && state.runtime.user
+    ? `${state.runtime.user.displayName} · ${state.runtime.user.email}`
+    : hosted
+      ? 'Sign in to open your hosted workspace.'
+      : 'Offline workspace active.';
+  elements.authCopy.textContent = state.runtime.allowRegistration
+    ? 'Sign in to access the shared self-hosted receipt workspace, or create a new account for your team.'
+    : 'Sign in to access the shared self-hosted receipt workspace. Public registration is disabled.';
+  elements.logoutButton.hidden = !authenticatedHostedMode();
+  elements.auditPanel.hidden = !hosted;
+  elements.registerForm.hidden = !state.runtime.allowRegistration;
+  elements.authShell.hidden = !hosted || authenticatedHostedMode();
+  elements.appShell.hidden = hosted && !authenticatedHostedMode();
+}
+
 function render() {
   applyTheme(state.settings.theme ?? 'light');
+  renderRuntimeState();
+  if (hostedModeActive() && !authenticatedHostedMode()) {
+    renderAuditLog();
+    return;
+  }
   populateFilters(elements, state.lookups, state.receipts);
   populateLookupManagers(elements, state.lookups, {
     remove: async (type, id) => {
@@ -163,10 +257,10 @@ function render() {
             businessId: key === 'businesses' ? state.lookups.businesses[0]?.id ?? '' : receipt.businessId,
             categoryId: key === 'categories' ? state.lookups.categories[0]?.id ?? '' : receipt.categoryId,
           };
-          await saveReceipt(updated);
-          return updated;
+          return saveReceipt(updated);
         }),
       );
+      await refreshAuditLogs();
       render();
     },
   });
@@ -185,6 +279,7 @@ function render() {
   renderReceiptDetails(elements, selectedReceipt(), state.lookups);
   updateViewerTransform(elements, state.viewer.zoom, state.viewer.rotation);
   updateStats(elements, filteredReceipts, state.lookups, state.settings);
+  renderAuditLog();
 }
 
 function buildReceiptRecord(file, analysis, fingerprint, duplicate) {
@@ -218,6 +313,14 @@ function buildReceiptRecord(file, analysis, fingerprint, duplicate) {
   };
 }
 
+async function refreshAuditLogs() {
+  if (!authenticatedHostedMode()) {
+    state.auditLogs = [];
+    return;
+  }
+  state.auditLogs = await listAuditLogs(12);
+}
+
 async function processFiles(fileList) {
   const files = [...fileList];
   if (!files.length) return;
@@ -228,13 +331,13 @@ async function processFiles(fileList) {
       const duplicate = await findDuplicateByFingerprint(fingerprint);
       const analysis = await analyseReceiptFile(file);
       const receipt = buildReceiptRecord(file, analysis, fingerprint, duplicate);
-      await saveReceipt(receipt);
-      await saveReceiptFile(receipt.id, {
+      const savedReceipt = await saveReceipt(receipt);
+      await saveReceiptFile(savedReceipt.id, {
         sourceBlob: analysis.file,
         previewBlob: analysis.previewBlob,
       });
-      state.receipts.unshift(receipt);
-      state.selectedReceiptId = receipt.id;
+      state.receipts.unshift(savedReceipt);
+      state.selectedReceiptId = savedReceipt.id;
       showToast(`${file.name} processed successfully.`, duplicate ? 'warning' : 'success');
     } catch (error) {
       console.error(error);
@@ -242,6 +345,7 @@ async function processFiles(fileList) {
     }
     updateStatus(elements, `Processed ${index + 1} of ${files.length} files.`, Math.round(((index + 1) / files.length) * 100));
   }
+  await refreshAuditLogs();
   syncSelection();
   render();
   updateStatus(elements, `Finished processing ${files.length} receipt(s).`, 100);
@@ -269,8 +373,9 @@ async function saveReceiptForm(event) {
     ocrText: String(form.get('ocrText') || ''),
     updatedAt: new Date().toISOString(),
   };
-  await saveReceipt(updated);
-  state.receipts = state.receipts.map((item) => (item.id === updated.id ? updated : item));
+  const saved = await saveReceipt(updated);
+  state.receipts = state.receipts.map((item) => (item.id === saved.id ? saved : item));
+  await refreshAuditLogs();
   render();
   showToast('Receipt saved.', 'success');
 }
@@ -286,17 +391,17 @@ async function rerunSelectedReceiptOcr() {
   updateStatus(elements, `Reprocessing ${receipt.sourceName}...`, 0);
   try {
     const analysis = await analyseReceiptFile(filePayload.sourceBlob);
-    const updated = {
+    const updated = await saveReceipt({
       ...receipt,
       ...analysis,
       updatedAt: new Date().toISOString(),
-    };
-    await saveReceipt(updated);
+    });
     await saveReceiptFile(receipt.id, {
       ...filePayload,
       previewBlob: analysis.previewBlob,
     });
     state.receipts = state.receipts.map((item) => (item.id === updated.id ? updated : item));
+    await refreshAuditLogs();
     render();
     showToast('OCR updated.', 'success');
   } catch (error) {
@@ -312,6 +417,7 @@ async function addLookupItem(type, name) {
   const idPrefix = type === 'business' ? 'business' : 'category';
   const nextItems = sortByLabel([...state.lookups[key], { id: uid(idPrefix), name }]);
   state.lookups = await saveLookups({ ...state.lookups, [key]: nextItems });
+  await refreshAuditLogs();
   render();
 }
 
@@ -324,6 +430,7 @@ async function handleImportBackup(file) {
   }
   await importBackupSnapshot(parsed);
   await hydrateState();
+  await refreshAuditLogs();
   render();
   showToast('Backup imported.', 'success');
 }
@@ -339,7 +446,60 @@ async function backupToDrive() {
   showToast('Backup uploaded to Google Drive.', 'success');
 }
 
+async function activateHostedSession(sessionPayload, successMessage) {
+  state.runtime.user = sessionPayload.user;
+  await hydrateState();
+  await refreshAuditLogs();
+  render();
+  showToast(successMessage, 'success');
+}
+
 function attachEvents() {
+  elements.loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const form = new FormData(elements.loginForm);
+      const sessionPayload = await loginUser({
+        email: String(form.get('email') || '').trim(),
+        password: String(form.get('password') || ''),
+      });
+      elements.loginForm.reset();
+      await activateHostedSession(sessionPayload, 'Signed in to the hosted workspace.');
+    } catch (error) {
+      console.error(error);
+      showToast(error.message, 'error');
+    }
+  });
+
+  elements.registerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const form = new FormData(elements.registerForm);
+      const sessionPayload = await registerUser({
+        displayName: String(form.get('displayName') || '').trim(),
+        email: String(form.get('email') || '').trim(),
+        password: String(form.get('password') || ''),
+      });
+      elements.registerForm.reset();
+      await activateHostedSession(sessionPayload, 'Account created and signed in.');
+    } catch (error) {
+      console.error(error);
+      showToast(error.message, 'error');
+    }
+  });
+
+  elements.logoutButton.addEventListener('click', async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error(error);
+    }
+    state.runtime.user = null;
+    resetHostedState();
+    render();
+    showToast('Signed out.', 'success');
+  });
+
   elements.uploadInput.addEventListener('change', (event) => processFiles(event.target.files));
   elements.cameraInput.addEventListener('change', (event) => processFiles(event.target.files));
   elements.importJsonInput.addEventListener('change', (event) => {
@@ -386,6 +546,7 @@ function attachEvents() {
     if (!receipt) return;
     await deleteReceipt(receipt.id);
     state.receipts = state.receipts.filter((item) => item.id !== receipt.id);
+    await refreshAuditLogs();
     syncSelection();
     render();
     showToast('Receipt deleted.', 'success');
@@ -434,12 +595,14 @@ function attachEvents() {
       googleDriveFolder: String(form.get('googleDriveFolder') || 'appDataFolder').trim() || 'appDataFolder',
       theme: state.settings.theme,
     });
+    await refreshAuditLogs();
     render();
     showToast('Settings saved.', 'success');
   });
 
   elements.themeToggle.addEventListener('click', async () => {
     state.settings = await saveSettings({ ...state.settings, theme: state.settings.theme === 'dark' ? 'light' : 'dark' });
+    if (hostedModeActive()) await refreshAuditLogs();
     render();
   });
 
@@ -494,11 +657,27 @@ async function registerServiceWorker() {
 }
 
 async function bootstrap() {
-  await hydrateState();
+  state.runtime = { ...state.runtime, ...(await initialiseRuntimeConfig()) };
   attachEvents();
-  render();
+
+  if (isHostedMode()) {
+    try {
+      const sessionPayload = await getSession();
+      await activateHostedSession(sessionPayload, 'Receipt Hub is ready in self-hosted mode.');
+    } catch (error) {
+      console.error(error);
+      setSessionToken('');
+      resetHostedState();
+      render();
+      showToast('Sign in to access the hosted workspace.', 'info');
+    }
+  } else {
+    await hydrateState();
+    render();
+    showToast('Receipt Hub is ready for offline use.', 'success');
+  }
+
   await registerServiceWorker();
-  showToast('Receipt Hub is ready for offline use.', 'success');
 }
 
 bootstrap().catch((error) => {

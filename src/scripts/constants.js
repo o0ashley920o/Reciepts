@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.0.0-phase1';
+export const APP_VERSION = '2.0.0-phase2';
 
 export const DEFAULT_BUSINESSES = [
   { id: 'business-personal', name: 'Personal' },

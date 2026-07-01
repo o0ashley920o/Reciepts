@@ -99,6 +99,35 @@ Rules:
 
 ---
 
+# PHASE 2 — SELF-HOSTED MULTI-USER SAAS
+
+## Hosted Platform
+- [x] Add self-hosted Node.js entrypoint
+- [x] Add SQLite-backed hosted persistence
+- [x] Add hosted auth (register/login/logout)
+- [x] Add per-user receipt isolation
+- [x] Add hosted settings + lookup storage
+
+---
+
+## Security & Operations
+- [x] Add session hashing
+- [x] Add hosted rate limiting
+- [x] Add security headers and CSP controls
+- [x] Add audit logging
+- [x] Preserve offline fallback mode
+
+---
+
+## Hosted UI
+- [x] Add hosted-mode detection
+- [x] Add login/register shell
+- [x] Add logout flow
+- [x] Add audit log panel
+- [x] Update README.md and `.env.example`
+
+---
+
 # 📘 README REQUIREMENTS (MANDATORY FOR EVERY PHASE)
 
 Must include:
@@ -242,14 +271,14 @@ Each phase is ONLY complete when:
 The system must:
 
 - [x] Start as a GitHub Pages offline app
-- [ ] Evolve into multi-user SaaS
+- [x] Evolve into multi-user SaaS
 - [x] Remain self-hostable
 - [x] Never require paid services
 - [x] Support Australian accounting rules
 - [x] Handle 10,000+ receipts
 - [x] Provide OCR + manual editing
 - [x] Support exports (Excel, CSV, JSON, ZIP)
-- [ ] Include audit logging
+- [x] Include audit logging
 - [ ] Include collaboration + workflows
 - [ ] Include integrations + AI features
-- [ ] Be secure, scalable, production-ready
+- [x] Be secure, scalable, production-ready
