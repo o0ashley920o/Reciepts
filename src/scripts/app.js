@@ -5,6 +5,7 @@ import { getFinancialYearLabel } from './finance.js';
 import { analyseReceiptFile } from './ocr.js';
 import {
   deleteReceipt,
+  exportBackupSnapshot,
   findDuplicateByFingerprint,
   getAllReceipts,
   getLookups,
@@ -662,7 +663,14 @@ function attachEvents() {
   });
   elements.driveBackupButton.addEventListener('click', async () => {
     try {
-      await backupToDrive();
+      const snapshot = await exportBackupSnapshot();
+      await uploadBackupToDrive({
+        clientId: state.settings.googleClientId,
+        content: snapshot,
+        fileName: state.settings.googleBackupFileName || 'receipt-backup.json',
+        folder: state.settings.googleDriveFolder,
+      });
+      showToast('Backup uploaded to Google Drive.', 'success');
     } catch (error) {
       console.error(error);
       showToast(error.message, 'error');

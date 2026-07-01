@@ -73,6 +73,8 @@ export async function downloadDriveFile(fileId) {
   }
   return response.json();
 }
+
+export async function uploadBackupToDrive({ clientId, content, fileName, folder = 'appDataFolder' }) {
   await connectGoogleDrive(clientId);
   if (!accessToken) {
     throw new Error('Google Drive authentication failed.');

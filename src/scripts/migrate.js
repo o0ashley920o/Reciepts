@@ -9,7 +9,7 @@
  * Usage: call runMigrations(storeHelpers) once during initialiseStorage().
  */
 
-import { DB_VERSION, STORE_NAMES } from './schema.js';
+import { DB_VERSION } from './schema.js';
 
 /**
  * Each entry is { version: number, up: async (helpers) => void }.
@@ -43,7 +43,7 @@ export async function runMigrations(helpers) {
     meta = {};
   }
 
-  const appliedVersion = Number(meta[STORE_NAMES.META] ?? meta.schemaVersion ?? 0);
+  const appliedVersion = Number(meta.schemaVersion ?? 0);
 
   for (const migration of MIGRATIONS) {
     if (migration.version <= appliedVersion) continue;

@@ -67,11 +67,12 @@ export function populateFilters(elements, lookups, receipts) {
 }
 
 export function populateLookupManagers(elements, lookups, handlers) {
+  const safeColour = (colour, fallback = '#2563eb') => /^#[0-9a-fA-F]{3,6}$/.test(colour) ? colour : fallback;
   const businessesMarkup = lookups.businesses
-    .map((business) => `<li><span style="border-left:3px solid ${escapeHtml(business.colour || '#2563eb')};padding-left:0.4rem">${escapeHtml(business.name)}</span><button data-lookup="business" data-id="${business.id}" type="button">×</button></li>`)
+    .map((business) => `<li><span style="border-left:3px solid ${safeColour(business.colour)};padding-left:0.4rem">${escapeHtml(business.name)}</span><button data-lookup="business" data-id="${business.id}" type="button">×</button></li>`)
     .join('');
   const categoriesMarkup = lookups.categories
-    .map((category) => `<li><span style="border-left:3px solid ${escapeHtml(category.colour || '#2563eb')};padding-left:0.4rem">${escapeHtml(category.name)}${category.taxCode ? ` <em class="muted">(${escapeHtml(category.taxCode)})</em>` : ''}</span><button data-lookup="category" data-id="${category.id}" type="button">×</button></li>`)
+    .map((category) => `<li><span style="border-left:3px solid ${safeColour(category.colour)};padding-left:0.4rem">${escapeHtml(category.name)}${category.taxCode ? ` <em class="muted">(${escapeHtml(category.taxCode)})</em>` : ''}</span><button data-lookup="category" data-id="${category.id}" type="button">×</button></li>`)
     .join('');
   elements.businessList.innerHTML = businessesMarkup;
   elements.categoryList.innerHTML = categoriesMarkup;
