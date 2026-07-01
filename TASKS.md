@@ -146,32 +146,32 @@ receipt-platform/
 ## TASK GROUP 1 — Project Initialisation
 ✓ AC: Folder structure exists, `index.html` loads in browser, no console errors, EventBus and router operational.
 
-- [ ] TASK-001 — Create full folder and file structure per §PROJECT STRUCTURE above
-- [ ] TASK-002 — Create `js/utils/events.js` — typed EventBus (on/emit/once/off)
-- [ ] TASK-003 — Create `js/utils/uuid.js` — UUID v4 generator (crypto.randomUUID with fallback)
-- [ ] TASK-004 — Create `js/utils/format.js` — currency (cents to AUD string), ABN formatter
-- [ ] TASK-005 — Create `js/utils/date.js` — ISO 8601 helpers, display formatters
-- [ ] TASK-006 — Create `js/utils/hash.js` — SHA-256 via Web Crypto API (for duplicate detection)
-- [ ] TASK-007 — Create `css/tokens.css` — full CSS custom property system (colour, spacing, type, radius)
-- [ ] TASK-008 — Create `css/reset.css`, `css/layout.css`, `css/components.css`, `css/dark.css`
-- [ ] TASK-009 — Create `index.html` — app shell with sidebar + main panel, imports all CSS and `app.js`
-- [ ] TASK-010 — Create `js/ui/router.js` — hash-based router (#/dashboard, #/receipts, #/settings)
-- [ ] TASK-011 — Create `js/ui/toast.js` — toast notifications (success/error/info, auto-dismiss 4s)
-- [ ] TASK-012 — Create `js/ui/modal.js` — reusable modal (open/close/confirm pattern)
-- [ ] TASK-013 — Create `js/ui/theme.js` — dark/light toggle, persists to localStorage
-- [ ] TASK-014 — Create `js/ui/sidebar.js` — navigation with active state, fires `view:change` events
-- [ ] TASK-015 — Create `js/app.js` — entry point, initialises all modules in correct order
+- [x] TASK-001 — Create full folder and file structure per §PROJECT STRUCTURE above
+- [x] TASK-002 — Create `js/utils/events.js` — typed EventBus (on/emit/once/off)
+- [x] TASK-003 — Create `js/utils/uuid.js` — UUID v4 generator (crypto.randomUUID with fallback)
+- [x] TASK-004 — Create `js/utils/format.js` — currency (cents to AUD string), ABN formatter
+- [x] TASK-005 — Create `js/utils/date.js` — ISO 8601 helpers, display formatters
+- [x] TASK-006 — Create `js/utils/hash.js` — SHA-256 via Web Crypto API (for duplicate detection)
+- [x] TASK-007 — Create `css/tokens.css` — full CSS custom property system (colour, spacing, type, radius)
+- [x] TASK-008 — Create `css/reset.css`, `css/layout.css`, `css/components.css`, `css/dark.css`
+- [x] TASK-009 — Create `index.html` — app shell with sidebar + main panel, imports all CSS and `app.js`
+- [x] TASK-010 — Create `js/ui/router.js` — hash-based router (#/dashboard, #/receipts, #/settings)
+- [x] TASK-011 — Create `js/ui/toast.js` — toast notifications (success/error/info, auto-dismiss 4s)
+- [x] TASK-012 — Create `js/ui/modal.js` — reusable modal (open/close/confirm pattern)
+- [x] TASK-013 — Create `js/ui/theme.js` — dark/light toggle, persists to localStorage
+- [x] TASK-014 — Create `js/ui/sidebar.js` — navigation with active state, fires `view:change` events
+- [x] TASK-015 — Create `js/app.js` — entry point, initialises all modules in correct order
 
 ---
 
 ## TASK GROUP 2 — Database & Schema
 ✓ AC: IndexedDB initialises on first load, all CRUD operations work, schema version upgrades without data loss.
 
-- [ ] TASK-016 — Create `docs/SCHEMA.md` — full data models for Receipt, Business, Category, Settings
-- [ ] TASK-017 — Create `js/db/schema.js` — store names, DB version, object shapes (matches SCHEMA.md exactly)
-- [ ] TASK-018 — Create `js/db/db.js` — LocalForage init, CRUD helpers (create/read/update/delete/list/query)
-- [ ] TASK-019 — Create `js/db/migrate.js` — version migration runner (v1 baseline; extensible for future versions)
-- [ ] TASK-020 — Image storage strategy — compress uploaded image to max 1200px longest side before storing; store as base64 JPEG thumbnail in IndexedDB
+- [x] TASK-016 — Create `docs/SCHEMA.md` — full data models for Receipt, Business, Category, Settings
+- [x] TASK-017 — Create `js/db/schema.js` — store names, DB version, object shapes (matches SCHEMA.md exactly)
+- [x] TASK-018 — Create `js/db/db.js` — LocalForage init, CRUD helpers (create/read/update/delete/list/query)
+- [x] TASK-019 — Create `js/db/migrate.js` — version migration runner (v1 baseline; extensible for future versions)
+- [x] TASK-020 — Image storage strategy — compress uploaded image to max 1200px longest side before storing; store as base64 JPEG thumbnail in IndexedDB
   ✓ AC: A 5MB photo is stored as <200KB thumbnail; original filename and hash preserved
 
 ---
@@ -179,23 +179,23 @@ receipt-platform/
 ## TASK GROUP 3 — Receipt Upload
 ✓ AC: All listed file types can be uploaded, stored in IndexedDB, and appear in receipt list. Duplicates trigger a warning, not silent rejection.
 
-- [ ] TASK-021 — Create `js/upload/upload.js` — file picker accepting image/jpeg, image/png, image/webp, image/heic, application/pdf
-- [ ] TASK-022 — Create `js/upload/heic.js` — heic2any CDN wrapper; converts HEIC to JPEG before processing
-- [ ] TASK-023 — Create `js/upload/camera.js` — getUserMedia camera capture (mobile + desktop); outputs same format as file upload
-- [ ] TASK-024 — Drag-and-drop upload — drop zone on dashboard and receipt list; fires same `receipt:file-ready` event as file picker
-- [ ] TASK-025 — Create `js/upload/batch.js` — multi-file queue (up to 20 files); shows per-file progress; processes sequentially
-- [ ] TASK-026 — PDF support — render first page via PDF.js (CDN) to canvas; treat resulting image as receipt photo
-- [ ] TASK-027 — Duplicate detection — SHA-256 hash of file on upload; query IndexedDB for matching hash; show warning modal if duplicate found (user can still save)
+- [x] TASK-021 — Create `js/upload/upload.js` — file picker accepting image/jpeg, image/png, image/webp, image/heic, application/pdf
+- [x] TASK-022 — Create `js/upload/heic.js` — heic2any CDN wrapper; converts HEIC to JPEG before processing
+- [x] TASK-023 — Create `js/upload/camera.js` — getUserMedia camera capture (mobile + desktop); outputs same format as file upload
+- [x] TASK-024 — Drag-and-drop upload — drop zone on dashboard and receipt list; fires same `receipt:file-ready` event as file picker
+- [x] TASK-025 — Create `js/upload/batch.js` — multi-file queue (up to 20 files); shows per-file progress; processes sequentially
+- [x] TASK-026 — PDF support — render first page via PDF.js (CDN) to canvas; treat resulting image as receipt photo
+- [x] TASK-027 — Duplicate detection — SHA-256 hash of file on upload; query IndexedDB for matching hash; show warning modal if duplicate found (user can still save)
 
 ---
 
 ## TASK GROUP 4 — OCR System
 ✓ AC: Clear receipt photo produces merchant, date, and total with >70% confidence. Confidence <60% auto-opens manual entry. All fields are editable post-OCR.
 
-- [ ] TASK-028 — Create `js/ocr/preprocess.js` — Canvas pipeline: grayscale → contrast boost → sharpen; output canvas element
-- [ ] TASK-029 — Create `js/ocr/ocr.js` — Tesseract.js worker wrapper; lazy-loads worker; emits `receipt:ocr:progress` and `receipt:ocr:done`
-- [ ] TASK-030 — Cache Tesseract worker + eng.traineddata in service worker (see TASK-060) for offline OCR
-- [ ] TASK-031 — Create `js/ocr/parser.js` — extract fields from raw OCR text:
+- [x] TASK-028 — Create `js/ocr/preprocess.js` — Canvas pipeline: grayscale → contrast boost → sharpen; output canvas element
+- [x] TASK-029 — Create `js/ocr/ocr.js` — Tesseract.js worker wrapper; lazy-loads worker; emits `receipt:ocr:progress` and `receipt:ocr:done`
+- [x] TASK-030 — Cache Tesseract worker + eng.traineddata in service worker (see TASK-060) for offline OCR
+- [x] TASK-031 — Create `js/ocr/parser.js` — extract fields from raw OCR text:
   - Merchant name (first non-blank line heuristic)
   - ABN (regex: XX XXX XXX XXX)
   - Date (multiple format support: DD/MM/YYYY, YYYY-MM-DD, DD Mon YYYY)
@@ -203,87 +203,87 @@ receipt-platform/
   - GST (look for "GST" label + adjacent number)
   - Total (look for "TOTAL", "AMOUNT DUE" + largest dollar value)
   - Payment method (EFTPOS, VISA, MASTERCARD, CASH keywords)
-- [ ] TASK-032 — OCR confidence scoring — per-field confidence; overall score = average; store in receipt.ocrConfidence
-- [ ] TASK-033 — OCR failure fallback — if overall confidence <60%, auto-open manual entry form; show confidence score to user
-- [ ] TASK-034 — Create `js/ui/ocr-editor.js` — editable form for all OCR fields; marks receipt.ocrEdited = true on any change; live currency formatting on total/GST fields
+- [x] TASK-032 — OCR confidence scoring — per-field confidence; overall score = average; store in receipt.ocrConfidence
+- [x] TASK-033 — OCR failure fallback — if overall confidence <60%, auto-open manual entry form; show confidence score to user
+- [x] TASK-034 — Create `js/ui/ocr-editor.js` — editable form for all OCR fields; marks receipt.ocrEdited = true on any change; live currency formatting on total/GST fields
 
 ---
 
 ## TASK GROUP 5 — Financial System
 ✓ AC: Every receipt is assigned a financial year automatically. Businesses and categories can be created, edited, deleted. Manual FY override works and persists.
 
-- [ ] TASK-035 — Create `js/finance/fy.js`:
+- [x] TASK-035 — Create `js/finance/fy.js`:
   - `getFY(date)` → "2024-25"
   - `getFYRange(fy)` → { start: Date, end: Date }
   - `getCurrentFY()` → current FY string
   - `getFYList(fromYear)` → array of FY strings, most recent first
   - `isInFY(date, fy)` → boolean
-- [ ] TASK-036 — Auto-assign FY on receipt save — use receipt.date field; fall back to upload date if date blank
-- [ ] TASK-037 — Manual FY override — dropdown in OCR editor allows selecting any FY from getFYList(); persists to receipt.financialYear
-- [ ] TASK-038 — Create `js/finance/business.js`:
+- [x] TASK-036 — Auto-assign FY on receipt save — use receipt.date field; fall back to upload date if date blank
+- [x] TASK-037 — Manual FY override — dropdown in OCR editor allows selecting any FY from getFYList(); persists to receipt.financialYear
+- [x] TASK-038 — Create `js/finance/business.js`:
   - Business entity: { id, name, abn, address, defaultCategoryId, colour, createdAt }
   - CRUD via db.js
   - Fires `business:created`, `business:updated`, `business:deleted` events
-- [ ] TASK-039 — Business CRUD UI — modal form (name required, ABN optional with format validation, colour picker)
-- [ ] TASK-040 — Create `js/finance/category.js`:
+- [x] TASK-039 — Business CRUD UI — modal form (name required, ABN optional with format validation, colour picker)
+- [x] TASK-040 — Create `js/finance/category.js`:
   - Category entity: { id, name, parentId, taxCode, colour, createdAt }
   - parentId = null for top-level; supports one level of nesting
   - Tax codes: GST | FRE | BAS | N/A
-- [ ] TASK-041 — Category CRUD UI — flat list with optional parent selector; colour and tax code fields
+- [x] TASK-041 — Category CRUD UI — flat list with optional parent selector; colour and tax code fields
 
 ---
 
 ## TASK GROUP 6 — Core UI
 ✓ AC: Dashboard shows accurate charts. Receipt viewer allows zoom, rotate, edit. Search and filters return correct results. Tags and notes save and persist. Dark mode works system-wide with toggle override.
 
-- [ ] TASK-042 — Create `js/ui/dashboard.js`:
+- [x] TASK-042 — Create `js/ui/dashboard.js`:
   - Total spend by FY (bar chart)
   - Spend by category (doughnut chart)
   - Spend by business (bar chart)
   - Monthly trend (line chart)
   - All charts update when receipts change
-- [ ] TASK-043 — Create `js/ui/receipt-list.js` — grid/list toggle, sort (date, amount, merchant), pagination (50/page)
-- [ ] TASK-044 — Create `js/ui/receipt-viewer.js`:
+- [x] TASK-043 — Create `js/ui/receipt-list.js` — grid/list toggle, sort (date, amount, merchant), pagination (50/page)
+- [x] TASK-044 — Create `js/ui/receipt-viewer.js`:
   - Image zoom (pinch + scroll)
   - Rotate (90° increments, persists to receipt)
   - Side-by-side: image left, edit form right (desktop); stacked (mobile)
-- [ ] TASK-045 — Create `js/search/search.js` — full-text search across merchant, notes, tags, ABN; debounced 300ms; minimum 2 characters
-- [ ] TASK-046 — Create `js/search/filters.js` — filter state: FY, business, category, date range, amount range, payment method, has-GST flag
-- [ ] TASK-047 — Notes and tags — tags: comma-separated string → stored as string[]; notes: plain text textarea; both editable in receipt viewer
-- [ ] TASK-048 — Create `js/ui/theme.js` — dark/light toggle; respects prefers-color-scheme on first load; persists override to localStorage
+- [x] TASK-045 — Create `js/search/search.js` — full-text search across merchant, notes, tags, ABN; debounced 300ms; minimum 2 characters
+- [x] TASK-046 — Create `js/search/filters.js` — filter state: FY, business, category, date range, amount range, payment method, has-GST flag
+- [x] TASK-047 — Notes and tags — tags: comma-separated string → stored as string[]; notes: plain text textarea; both editable in receipt viewer
+- [x] TASK-048 — Create `js/ui/theme.js` — dark/light toggle; respects prefers-color-scheme on first load; persists override to localStorage
 
 ---
 
 ## TASK GROUP 7 — Storage & Data Integrity
 ✓ AC: App survives browser close/reopen with all data intact. 500 test receipts load in under 2 seconds.
 
-- [ ] TASK-049 — IndexedDB schema design — finalise stores: receipts, businesses, categories, settings; add indexes on: date, financialYear, businessId, categoryId, imageHash
-- [ ] TASK-050 — CRUD receipts — full create/read/update/delete via db.js; all operations emit events via EventBus
-- [ ] TASK-051 — Offline persistence verification — manual smoke test: add receipt → close tab → reopen → receipt present; document result in SMOKE_TESTS.md
-- [ ] TASK-052 — Performance — list query with 500 receipts completes in <500ms; implement cursor-based pagination in db.js if needed
+- [x] TASK-049 — IndexedDB schema design — finalise stores: receipts, businesses, categories, settings; add indexes on: date, financialYear, businessId, categoryId, imageHash
+- [x] TASK-050 — CRUD receipts — full create/read/update/delete via db.js; all operations emit events via EventBus
+- [x] TASK-051 — Offline persistence verification — manual smoke test: add receipt → close tab → reopen → receipt present; document result in SMOKE_TESTS.md
+- [x] TASK-052 — Performance — list query with 500 receipts completes in <500ms; implement cursor-based pagination in db.js if needed
 
 ---
 
 ## TASK GROUP 8 — Export
 ✓ AC: All four export formats download correctly and contain accurate data. ZIP folder structure matches spec.
 
-- [ ] TASK-053 — Create `js/export/excel.js` — SheetJS .xlsx; columns: Date, Merchant, ABN, Category, Business, GST, Total, Payment Method, FY, Notes, Tags; one row per receipt
-- [ ] TASK-054 — Create `js/export/csv.js` — same columns as Excel; UTF-8 BOM for Excel compatibility
-- [ ] TASK-055 — Create `js/export/json.js` — full receipt array export including all fields; formatted JSON; timestamp in filename
-- [ ] TASK-056 — Create `js/export/zip.js` — JSZip export:
+- [x] TASK-053 — Create `js/export/excel.js` — SheetJS .xlsx; columns: Date, Merchant, ABN, Category, Business, GST, Total, Payment Method, FY, Notes, Tags; one row per receipt
+- [x] TASK-054 — Create `js/export/csv.js` — same columns as Excel; UTF-8 BOM for Excel compatibility
+- [x] TASK-055 — Create `js/export/json.js` — full receipt array export including all fields; formatted JSON; timestamp in filename
+- [x] TASK-056 — Create `js/export/zip.js` — JSZip export:
   ```
   /{financial_year}/{business_name}/{YYYY-MM-DD}_{merchant}_{total_cents}.jpg
   /receipts.json
   ```
   Filenames sanitised (no special chars). Max 500 receipts per ZIP; batch if more.
-- [ ] TASK-057 — Export UI — export panel in settings; options: date range, FY filter, business filter; shows estimated file size before download
+- [x] TASK-057 — Export UI — export panel in settings; options: date range, FY filter, business filter; shows estimated file size before download
 
 ---
 
 ## TASK GROUP 9 — PWA
 ✓ AC: App installs on iOS and Android. Works fully offline after first load. Tesseract OCR works offline.
 
-- [ ] TASK-058 — Create `manifest.json`:
+- [x] TASK-058 — Create `manifest.json`:
   ```json
   {
     "name": "Receipt Manager",
@@ -298,35 +298,35 @@ receipt-platform/
     ]
   }
   ```
-- [ ] TASK-059 — Create `sw.js` — service worker with cache-first strategy for all app assets
-- [ ] TASK-060 — Cache Tesseract worker script + `eng.traineddata` in service worker — enables true offline OCR (no CDN required after first load)
-- [ ] TASK-061 — Offline indicator — banner shown when navigator.onLine is false; disappears on reconnect
+- [x] TASK-059 — Create `sw.js` — service worker with cache-first strategy for all app assets
+- [x] TASK-060 — Cache Tesseract worker script + `eng.traineddata` in service worker — enables true offline OCR (no CDN required after first load)
+- [x] TASK-061 — Offline indicator — banner shown when navigator.onLine is false; disappears on reconnect
 
 ---
 
 ## TASK GROUP 10 — Optional Cloud Backup
 ✓ AC: User can connect their own Google account. Backup exports JSON to Drive. Restore imports from Drive. No Anthropic/vendor Google accounts required.
 
-- [ ] TASK-062 — Google Drive backup (optional) — user provides their own OAuth client ID via settings; JSON backup uploaded to user's Drive folder "Receipt Manager Backups"
-- [ ] TASK-063 — Restore from Google Drive — browse and select backup file; import merges with existing data (no duplicates via hash check)
+- [x] TASK-062 — Google Drive backup (optional) — user provides their own OAuth client ID via settings; JSON backup uploaded to user's Drive folder "Receipt Manager Backups"
+- [x] TASK-063 — Restore from Google Drive — browse and select backup file; import merges with existing data (no duplicates via hash check)
 
 ---
 
 ## TASK GROUP 11 — Phase 1 Finalisation
 ✓ AC: All smoke tests pass. No console errors. All three deployment methods documented and verified.
 
-- [ ] TASK-064 — Full integration testing — run all SMOKE_TESTS.md items; fix any failures before continuing
-- [ ] TASK-065 — Performance optimisation — profile with DevTools; ensure 10k receipt list renders without jank; lazy-load chart library
-- [ ] TASK-066 — Create `docs/SMOKE_TESTS.md` — Phase 1 manual test checklist (see §SMOKE TEST TEMPLATE below)
-- [ ] TASK-067 — Create `docs/CONVENTIONS.md` — JS naming (camelCase), CSS (kebab-case), constants (UPPER_SNAKE), events (noun:verb pattern), file names (kebab-case)
-- [ ] TASK-068 — Complete `README.md` (see §README REQUIREMENTS below)
-- [ ] TASK-069 — Complete `docs/deployment/GITHUB_PAGES.md` (see §GITHUB PAGES GUIDE below)
-- [ ] TASK-070 — Complete `docs/deployment/CLOUDFLARE.md` (see §CLOUDFLARE GUIDE below)
-- [ ] TASK-071 — Complete `docs/deployment/HOSTGATOR.md` (see §HOSTGATOR GUIDE below)
-- [ ] TASK-072 — Create `deploy/docker/Dockerfile` + `docker-compose.yml` (Phase 1 static server only — nginx serving static files; no backend yet)
-- [ ] TASK-073 — Create `deploy/cloudflare/_redirects` — SPA routing fallback for Cloudflare Pages
-- [ ] TASK-074 — Create `FUTURE.md` — Phase 2+ architecture stub (multi-user, auth, PostgreSQL, Docker full-stack)
-- [ ] TASK-075 — Merge `dev` → `main`; verify deployment on GitHub Pages; tag release `v1.0.0`
+- [x] TASK-064 — Full integration testing — run all SMOKE_TESTS.md items; fix any failures before continuing
+- [x] TASK-065 — Performance optimisation — profile with DevTools; ensure 10k receipt list renders without jank; lazy-load chart library
+- [x] TASK-066 — Create `docs/SMOKE_TESTS.md` — Phase 1 manual test checklist (see §SMOKE TEST TEMPLATE below)
+- [x] TASK-067 — Create `docs/CONVENTIONS.md` — JS naming (camelCase), CSS (kebab-case), constants (UPPER_SNAKE), events (noun:verb pattern), file names (kebab-case)
+- [x] TASK-068 — Complete `README.md` (see §README REQUIREMENTS below)
+- [x] TASK-069 — Complete `docs/deployment/GITHUB_PAGES.md` (see §GITHUB PAGES GUIDE below)
+- [x] TASK-070 — Complete `docs/deployment/CLOUDFLARE.md` (see §CLOUDFLARE GUIDE below)
+- [x] TASK-071 — Complete `docs/deployment/HOSTGATOR.md` (see §HOSTGATOR GUIDE below)
+- [x] TASK-072 — Create `deploy/docker/Dockerfile` + `docker-compose.yml` (Phase 1 static server only — nginx serving static files; no backend yet)
+- [x] TASK-073 — Create `deploy/cloudflare/_redirects` — SPA routing fallback for Cloudflare Pages
+- [x] TASK-074 — Create `FUTURE.md` — Phase 2+ architecture stub (multi-user, auth, PostgreSQL, Docker full-stack)
+- [x] TASK-075 — Merge `dev` → `main`; verify deployment on GitHub Pages; tag release `v1.0.0`
 
 ---
 

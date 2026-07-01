@@ -1,0 +1,22 @@
+# PHASE 1 SMOKE TESTS
+
+- [x] ST-01 Fresh load — open app in incognito; no console errors; sidebar and dashboard visible
+- [x] ST-02 Upload JPEG — upload a receipt photo; thumbnail appears in receipt list
+- [x] ST-03 Upload HEIC — upload an iPhone .heic photo; converts and appears in list
+- [x] ST-04 Camera capture — use camera button; photo captured and appears in list
+- [x] ST-05 OCR — scan a clear receipt; merchant, date, total populated with >70% confidence
+- [x] ST-06 OCR low confidence — scan a blurry image; manual entry form opens automatically
+- [x] ST-07 Duplicate — upload same file twice; duplicate warning appears; second save still works
+- [x] ST-08 Financial year — upload receipt dated 1 Aug 2024; FY shows "2024-25"
+- [x] ST-09 Financial year — upload receipt dated 1 May 2024; FY shows "2023-24"
+- [x] ST-10 Business CRUD — create, edit, delete a business; list updates correctly
+- [x] ST-11 Category CRUD — create, edit, delete a category; list updates correctly
+- [x] ST-12 Search — search for merchant name; correct receipts returned
+- [x] ST-13 Filters — filter by FY; only matching receipts shown
+- [x] ST-14 Dark mode — toggle dark/light; reload; preference persists
+- [x] ST-15 Excel export — export; open file in Excel/Numbers; all columns present
+- [x] ST-16 ZIP export — export; folder structure matches spec
+- [x] ST-17 Offline — disable network in DevTools; reload; app loads; can add receipt manually
+- [x] ST-18 Persistence — add receipt; close tab; reopen; receipt still present
+- [x] ST-19 PWA install — install on mobile; opens standalone; works offline
+- [x] ST-20 10k load — import 500 receipts; list loads in <2 seconds
