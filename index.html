@@ -111,7 +111,17 @@
         <section class="panel sidebar-panel">
           <h2>Businesses</h2>
           <form id="business-form" class="stack-form">
-            <input id="business-name" name="businessName" type="text" placeholder="Add business name" maxlength="80" required />
+            <input id="business-name" name="businessName" type="text" placeholder="Business name" maxlength="80" required />
+            <input name="businessAbn" type="text" placeholder="ABN (optional)" maxlength="14" pattern="[\d ]{11,14}" />
+            <input name="businessAddress" type="text" placeholder="Address (optional)" maxlength="120" />
+            <label class="inline-label">
+              Default category
+              <select id="business-default-category" name="businessDefaultCategory"></select>
+            </label>
+            <label class="inline-label">
+              Colour
+              <input name="businessColour" type="color" value="#2563eb" />
+            </label>
             <button class="secondary-button" type="submit">Add business</button>
           </form>
           <ul id="business-list" class="chip-list"></ul>
@@ -120,7 +130,24 @@
         <section class="panel sidebar-panel">
           <h2>Categories</h2>
           <form id="category-form" class="stack-form">
-            <input id="category-name" name="categoryName" type="text" placeholder="Add category name" maxlength="80" required />
+            <input id="category-name" name="categoryName" type="text" placeholder="Category name" maxlength="80" required />
+            <label class="inline-label">
+              Parent category
+              <select id="category-parent" name="categoryParent"></select>
+            </label>
+            <label class="inline-label">
+              Tax code
+              <select name="categoryTaxCode">
+                <option value="GST">GST</option>
+                <option value="FRE">FRE</option>
+                <option value="BAS">BAS</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </label>
+            <label class="inline-label">
+              Colour
+              <input name="categoryColour" type="color" value="#2563eb" />
+            </label>
             <button class="secondary-button" type="submit">Add category</button>
           </form>
           <ul id="category-list" class="chip-list"></ul>
@@ -141,6 +168,7 @@
             <div class="stack-form compact">
               <button id="drive-connect-button" class="secondary-button" type="button">Connect Google Drive</button>
               <button id="drive-backup-button" class="secondary-button" type="button">Backup to Drive</button>
+              <button id="drive-restore-button" class="secondary-button" type="button">Restore from Drive</button>
             </div>
           </details>
         </section>
@@ -231,6 +259,24 @@
             </div>
             <canvas id="year-chart" aria-label="Financial year receipt chart"></canvas>
           </article>
+          <article class="panel chart-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Business</p>
+                <h3>Spend by business</h3>
+              </div>
+            </div>
+            <canvas id="business-chart" aria-label="Business spending chart"></canvas>
+          </article>
+          <article class="panel chart-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Trend</p>
+                <h3>Monthly spend</h3>
+              </div>
+            </div>
+            <canvas id="monthly-chart" aria-label="Monthly spend trend chart"></canvas>
+          </article>
         </section>
 
         <section class="workspace-grid">
@@ -240,9 +286,17 @@
                 <p class="eyebrow">Receipts</p>
                 <h3>Library</h3>
               </div>
-              <span id="receipt-count">0 shown</span>
+              <div class="button-row wrap">
+                <span id="receipt-count">0 shown</span>
+                <button id="list-view-toggle" class="secondary-button" type="button">Grid view</button>
+              </div>
             </div>
             <div id="receipt-list" class="receipt-list"></div>
+            <div class="pagination-row">
+              <button id="prev-page-button" class="secondary-button" type="button" disabled>← Prev</button>
+              <span id="pagination-info"></span>
+              <button id="next-page-button" class="secondary-button" type="button" disabled>Next →</button>
+            </div>
           </article>
 
           <article class="panel detail-panel">
@@ -397,5 +451,8 @@
     </div>
 
     <div id="toast" class="toast" aria-live="polite"></div>
+    <div id="offline-banner" class="offline-banner" hidden aria-live="polite">
+      You are offline. Changes will be saved locally and synced when you reconnect.
+    </div>
   </body>
 </html>

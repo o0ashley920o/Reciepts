@@ -31,7 +31,7 @@ import {
   updateViewerTransform,
 } from './ui.js';
 import { debounce, escapeHtml, fromDateTimeInput, safeJsonParse, sha256, sortByLabel, uid } from './utils.js';
-import { connectGoogleDrive, uploadBackupToDrive } from './drive.js';
+import { connectGoogleDrive, downloadDriveFile, listDriveBackups, uploadBackupToDrive } from './drive.js';
 
 const state = {
   receipts: [],
@@ -46,6 +46,7 @@ const state = {
     payment: 'all',
     status: 'all',
   },
+  list: { page: 0, pageSize: 50, viewMode: 'list' },
   viewer: { zoom: 1, rotation: 0 },
   installPrompt: null,
   runtime: {
@@ -92,6 +93,8 @@ const elements = {
   statDuplicates: document.querySelector('#stat-duplicates'),
   categoryChart: document.querySelector('#category-chart'),
   yearChart: document.querySelector('#year-chart'),
+  businessChart: document.querySelector('#business-chart'),
+  monthlyChart: document.querySelector('#monthly-chart'),
   businessForm: document.querySelector('#business-form'),
   businessName: document.querySelector('#business-name'),
   businessList: document.querySelector('#business-list'),
@@ -110,6 +113,7 @@ const elements = {
   importJsonButton: document.querySelector('#import-json-button'),
   driveConnectButton: document.querySelector('#drive-connect-button'),
   driveBackupButton: document.querySelector('#drive-backup-button'),
+  driveRestoreButton: document.querySelector('#drive-restore-button'),
   deleteButton: document.querySelector('#delete-button'),
   zoomInButton: document.querySelector('#zoom-in-button'),
   zoomOutButton: document.querySelector('#zoom-out-button'),
@@ -117,6 +121,10 @@ const elements = {
   rotateButton: document.querySelector('#rotate-button'),
   reprocessButton: document.querySelector('#reprocess-button'),
   installButton: document.querySelector('#install-button'),
+  listViewToggle: document.querySelector('#list-view-toggle'),
+  prevPageButton: document.querySelector('#prev-page-button'),
+  nextPageButton: document.querySelector('#next-page-button'),
+  offlineBanner: document.querySelector('#offline-banner'),
 };
 
 function selectedReceipt() {
@@ -243,10 +251,14 @@ function render() {
   populateLookupManagers(elements, state.lookups, {
     remove: async (type, id) => {
       const key = type === 'business' ? 'businesses' : 'categories';
+      const removed = state.lookups[key].find((item) => item.id === id);
       state.lookups = await saveLookups({
         ...state.lookups,
         [key]: state.lookups[key].filter((item) => item.id !== id),
       });
+      if (removed) {
+        document.dispatchEvent(new CustomEvent(`${type}:deleted`, { detail: removed }));
+      }
       state.receipts = await Promise.all(
         state.receipts.map(async (receipt) => {
           if ((key === 'businesses' && receipt.businessId !== id) || (key === 'categories' && receipt.categoryId !== id)) {
@@ -269,7 +281,7 @@ function render() {
   if (!filteredReceipts.some((receipt) => receipt.id === state.selectedReceiptId)) {
     state.selectedReceiptId = filteredReceipts[0]?.id ?? state.selectedReceiptId;
   }
-  renderReceiptList(elements, filteredReceipts, state.selectedReceiptId, state.lookups, state.settings);
+  renderReceiptList(elements, filteredReceipts, state.selectedReceiptId, state.lookups, state.settings, state.list);
   attachReceiptListHandlers(elements.receiptList, (receiptId) => {
     state.selectedReceiptId = receiptId;
     state.viewer.zoom = 1;
@@ -338,7 +350,20 @@ async function processFiles(fileList) {
       });
       state.receipts.unshift(savedReceipt);
       state.selectedReceiptId = savedReceipt.id;
-      showToast(`${file.name} processed successfully.`, duplicate ? 'warning' : 'success');
+      if (duplicate) {
+        showToast(`${file.name} may be a duplicate — please review.`, 'warning');
+      } else if (analysis.ocrConfidence < 60) {
+        showToast(
+          `OCR confidence is low (${analysis.ocrConfidence}%). Please review and correct the extracted fields manually.`,
+          'warning',
+        );
+        // Scroll the receipt detail panel into view so the user notices the edit form
+        requestAnimationFrame(() => {
+          document.querySelector('#receipt-form')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      } else {
+        showToast(`${file.name} processed successfully.`, 'success');
+      }
     } catch (error) {
       console.error(error);
       showToast(`Could not process ${file.name}: ${error.message}`, 'error');
@@ -411,12 +436,14 @@ async function rerunSelectedReceiptOcr() {
   updateStatus(elements, 'OCR ready.', 100);
 }
 
-async function addLookupItem(type, name) {
-  if (!name) return;
+async function addLookupItem(type, entity) {
+  if (!entity.name) return;
   const key = type === 'business' ? 'businesses' : 'categories';
   const idPrefix = type === 'business' ? 'business' : 'category';
-  const nextItems = sortByLabel([...state.lookups[key], { id: uid(idPrefix), name }]);
+  const newItem = { id: uid(idPrefix), createdAt: new Date().toISOString(), ...entity };
+  const nextItems = sortByLabel([...state.lookups[key], newItem]);
   state.lookups = await saveLookups({ ...state.lookups, [key]: nextItems });
+  document.dispatchEvent(new CustomEvent(`${type}:created`, { detail: newItem }));
   await refreshAuditLogs();
   render();
 }
@@ -531,6 +558,7 @@ function attachEvents() {
     state.filters.category = elements.categoryFilter.value;
     state.filters.payment = elements.paymentFilter.value;
     state.filters.status = elements.statusFilter.value;
+    state.list.page = 0; // reset to first page on every filter change
     render();
   }, 100);
 
@@ -572,14 +600,27 @@ function attachEvents() {
 
   elements.businessForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    await addLookupItem('business', elements.businessName.value.trim());
+    const form = new FormData(elements.businessForm);
+    await addLookupItem('business', {
+      name: String(form.get('businessName') || '').trim(),
+      abn: String(form.get('businessAbn') || '').trim(),
+      address: String(form.get('businessAddress') || '').trim(),
+      defaultCategoryId: String(form.get('businessDefaultCategory') || '').trim(),
+      colour: String(form.get('businessColour') || '#2563eb'),
+    });
     elements.businessForm.reset();
     showToast('Business added.', 'success');
   });
 
   elements.categoryForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    await addLookupItem('category', elements.categoryName.value.trim());
+    const form = new FormData(elements.categoryForm);
+    await addLookupItem('category', {
+      name: String(form.get('categoryName') || '').trim(),
+      parentId: String(form.get('categoryParent') || '').trim() || null,
+      taxCode: String(form.get('categoryTaxCode') || 'GST'),
+      colour: String(form.get('categoryColour') || '#2563eb'),
+    });
     elements.categoryForm.reset();
     showToast('Category added.', 'success');
   });
@@ -627,6 +668,62 @@ function attachEvents() {
       showToast(error.message, 'error');
     }
   });
+
+  // TASK-063 — Restore from Google Drive
+  elements.driveRestoreButton?.addEventListener('click', async () => {
+    try {
+      showToast('Listing Drive backups…', 'info');
+      const files = await listDriveBackups({
+        clientId: state.settings.googleClientId,
+        folder: state.settings.googleDriveFolder,
+      });
+      if (!files.length) {
+        showToast('No backup files found in Google Drive.', 'info');
+        return;
+      }
+      const labels = files.map((f, i) => `${i + 1}. ${f.name} (${new Date(f.modifiedTime).toLocaleDateString()})`).join('\n');
+      const choice = prompt(`Select a backup to restore (enter number):\n\n${labels}`);
+      const index = Number(choice) - 1;
+      if (Number.isNaN(index) || index < 0 || index >= files.length) {
+        showToast('Restore cancelled.', 'info');
+        return;
+      }
+      showToast(`Downloading ${files[index].name}…`, 'info');
+      const snapshot = await downloadDriveFile(files[index].id);
+      await importBackupSnapshot(snapshot);
+      await hydrateState();
+      await refreshAuditLogs();
+      render();
+      showToast('Backup restored from Google Drive.', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast(error.message, 'error');
+    }
+  });
+
+  // TASK-043 — grid/list toggle
+  elements.listViewToggle?.addEventListener('click', () => {
+    state.list.viewMode = state.list.viewMode === 'grid' ? 'list' : 'grid';
+    state.list.page = 0;
+    render();
+  });
+
+  // TASK-043 — pagination
+  elements.prevPageButton?.addEventListener('click', () => {
+    if (state.list.page > 0) {
+      state.list.page -= 1;
+      render();
+    }
+  });
+  elements.nextPageButton?.addEventListener('click', () => {
+    const filteredReceipts = getFilteredReceipts();
+    const totalPages = Math.ceil(filteredReceipts.length / state.list.pageSize);
+    if (state.list.page < totalPages - 1) {
+      state.list.page += 1;
+      render();
+    }
+  });
+
   elements.installButton.addEventListener('click', async () => {
     if (!state.installPrompt) {
       showToast('Use your browser menu to install this app.', 'info');
@@ -643,6 +740,16 @@ function attachEvents() {
     state.installPrompt = event;
     render();
   });
+
+  // TASK-061 — Offline indicator
+  function updateOfflineBanner() {
+    if (elements.offlineBanner) {
+      elements.offlineBanner.hidden = navigator.onLine;
+    }
+  }
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+  updateOfflineBanner();
 }
 
 async function registerServiceWorker() {

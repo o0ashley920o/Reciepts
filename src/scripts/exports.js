@@ -90,7 +90,7 @@ export async function exportReceiptZip(receipts) {
     if (!filePayload?.sourceBlob) continue;
     const business = businesses[receipt.businessId] ?? 'unassigned';
     const financialYear = receipt.financialYear ?? 'unassigned-year';
-    const folder = zip.folder(`${business}/${financialYear}`);
+    const folder = zip.folder(`${financialYear}/${business}`);
     const extension = receipt.mimeType === 'application/pdf' ? 'pdf' : 'jpg';
     folder.file(`${makeReceiptFileName(receipt)}.${extension}`, filePayload.sourceBlob);
   }

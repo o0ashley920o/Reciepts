@@ -1,6 +1,7 @@
 import { DEFAULT_BUSINESSES, DEFAULT_CATEGORIES, DEFAULT_SETTINGS } from './constants.js';
 import { apiDelete, apiGet, apiPut, isHostedMode } from './auth.js';
 import { blobToDataUrl, sortByLabel } from './utils.js';
+import { runMigrations } from './migrate.js';
 
 const stores = {};
 
@@ -26,6 +27,7 @@ const receiptsStore = () => createStore('receipts');
 const filesStore = () => createStore('receipt-files');
 const lookupsStore = () => createStore('lookups');
 const settingsStore = () => createStore('settings');
+const metaStore = () => createStore('meta');
 
 async function dataUrlToBlob(value) {
   if (!value || !String(value).startsWith('data:')) return value;
@@ -47,6 +49,11 @@ export async function initialiseStorage() {
   if (!settings) {
     await settingsStore().setItem('settings', DEFAULT_SETTINGS);
   }
+
+  await runMigrations({
+    getMeta: () => metaStore().getItem('meta').then((v) => v ?? {}),
+    setMeta: (value) => metaStore().setItem('meta', value),
+  });
 }
 
 export async function getLookups() {
