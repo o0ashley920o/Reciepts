@@ -1,0 +1,20 @@
+{
+  "name": "reciepts",
+  "version": "0.1.0",
+  "description": "Offline-first receipt management platform scaffold",
+  "scripts": {
+    "preview": "python3 -m http.server 4173"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/o0ashley920o/Reciepts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/o0ashley920o/Reciepts/issues"
+  },
+  "homepage": "https://github.com/o0ashley920o/Reciepts#readme",
+  "private": true
+}
