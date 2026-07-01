@@ -5,6 +5,20 @@ const APP_FILES = [
   './manifest.webmanifest',
   './src/styles/main.css',
   './src/assets/icon.svg',
+  './src/vendor/localforage.min.js',
+  './src/vendor/chart.umd.js',
+  './src/vendor/tesseract.min.js',
+  './src/vendor/worker.min.js',
+  './src/vendor/heic2any.min.js',
+  './src/vendor/opencv.js',
+  './src/vendor/jszip.min.js',
+  './src/vendor/write-excel-file.min.js',
+  './src/vendor/pdf.min.mjs',
+  './src/vendor/pdf.worker.min.mjs',
+  './src/vendor/tesseract-core/tesseract-core-simd-lstm.js',
+  './src/vendor/tesseract-core/tesseract-core-simd-lstm.wasm',
+  './src/vendor/tesseract-core/tesseract-core-simd-lstm.wasm.js',
+  './src/vendor/tessdata/4.0.0/eng.traineddata.gz',
   './src/scripts/app.js',
   './src/scripts/constants.js',
   './src/scripts/utils.js',
@@ -13,16 +27,7 @@ const APP_FILES = [
   './src/scripts/ocr.js',
   './src/scripts/exports.js',
   './src/scripts/drive.js',
-  './src/scripts/ui.js',
-  'https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js',
-  'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
-  'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
-  'https://docs.opencv.org/4.x/opencv.js',
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs',
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs',
-  'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js'
+  './src/scripts/ui.js'
 ];
 
 self.addEventListener('install', (event) => {

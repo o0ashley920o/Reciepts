@@ -41,16 +41,17 @@ export async function exportCsv(receipts) {
 }
 
 export async function exportWorkbook(receipts) {
-  if (!globalThis.XLSX) {
-    await import('https://cdn.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js');
+  if (!globalThis.writeXlsxFile) {
+    throw new Error('Excel export library is unavailable.');
   }
   const lookups = await getLookups();
   const rows = getExportRows(receipts, lookups);
-  const worksheet = globalThis.XLSX.utils.json_to_sheet(rows);
-  const workbook = globalThis.XLSX.utils.book_new();
-  globalThis.XLSX.utils.book_append_sheet(workbook, worksheet, 'Receipts');
-  const file = globalThis.XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  downloadBlob(new Blob([file], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'receipts-export.xlsx');
+  const headers = Object.keys(rows[0] ?? { id: '', merchantName: '' });
+  const data = [
+    headers.map((header) => ({ value: header, fontWeight: 'bold' })),
+    ...rows.map((row) => headers.map((header) => ({ value: row[header] ?? '' }))),
+  ];
+  await globalThis.writeXlsxFile(data, { fileName: 'receipts-export.xlsx' });
 }
 
 async function serialiseBackup(snapshot) {
@@ -79,7 +80,7 @@ export async function exportBackupJson() {
 
 export async function exportReceiptZip(receipts) {
   if (!globalThis.JSZip) {
-    await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+    throw new Error('ZIP export library is unavailable.');
   }
   const lookups = await getLookups();
   const businesses = buildLookupMap(lookups.businesses);

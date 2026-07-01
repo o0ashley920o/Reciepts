@@ -3,11 +3,12 @@ import { blobToDataUrl, createThumbnailDataUrl, fileToArrayBuffer, normaliseText
 
 let pdfjsPromise;
 let opencvPromise;
+let tesseractWorkerPromise;
 
 export async function ensurePdfJs() {
   if (!pdfjsPromise) {
-    pdfjsPromise = import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs').then((pdfjs) => {
-      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+    pdfjsPromise = import('../vendor/pdf.min.mjs').then((pdfjs) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = './src/vendor/pdf.worker.min.mjs';
       return pdfjs;
     });
   }
@@ -114,7 +115,15 @@ export async function runOcr(source) {
   if (!globalThis.Tesseract) {
     throw new Error('Tesseract.js is unavailable.');
   }
-  const result = await globalThis.Tesseract.recognize(source, 'eng');
+  if (!tesseractWorkerPromise) {
+    tesseractWorkerPromise = globalThis.Tesseract.createWorker('eng', 1, {
+      workerPath: './src/vendor/worker.min.js',
+      corePath: './src/vendor/tesseract-core/tesseract-core-simd-lstm.js',
+      langPath: './src/vendor/tessdata/4.0.0',
+    });
+  }
+  const worker = await tesseractWorkerPromise;
+  const result = await worker.recognize(source);
   return {
     text: result.data.text ?? '',
     confidence: Number(result.data.confidence ?? 0),

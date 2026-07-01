@@ -68,7 +68,7 @@ Then open `http://127.0.0.1:4173/`.
 
 - Modern Chromium, Safari, or Firefox browser with IndexedDB support
 - JavaScript enabled
-- Network access on first load to cache CDN-provided OCR and export libraries
+- Ability to serve the committed static files, including `src/vendor/` assets
 
 ### First-time setup
 
@@ -293,7 +293,7 @@ Phase 1 is local-only. If data appears missing, verify you are using the same br
 
 - Re-run OCR after rotating or replacing low-quality scans.
 - Prefer high-contrast images and well-lit camera captures.
-- Confirm the OpenCV and Tesseract CDN assets loaded successfully during first-time setup.
+- Confirm the bundled OpenCV and Tesseract assets inside `src/vendor/` are being served correctly.
 
 ### Email issues
 
@@ -303,7 +303,7 @@ Email flows are reserved for future hosted deployments. Keep SMTP variables blan
 
 - Use HTTPS for PWA installation and service-worker registration.
 - Ensure the host returns the correct MIME type for `.webmanifest`.
-- Avoid content blockers that stop CDN OCR scripts on first load.
+- Ensure the `src/vendor/` directory is deployed with the rest of the static site.
 
 ### Performance issues
 

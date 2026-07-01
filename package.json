@@ -16,5 +16,16 @@
     "url": "https://github.com/o0ashley920o/Reciepts/issues"
   },
   "homepage": "https://github.com/o0ashley920o/Reciepts#readme",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@techstark/opencv-js": "^5.0.0-release.1",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "chart.js": "^4.4.3",
+    "heic2any": "^0.0.4",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
+    "pdfjs-dist": "^6.1.200",
+    "tesseract.js": "^5.1.1",
+    "write-excel-file": "^4.1.1"
+  }
 }
